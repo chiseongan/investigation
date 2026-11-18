@@ -48,7 +48,7 @@ describe('tue/wed/thu scripts', () => {
         }
       }
     }
-    for (const id of CLUES.map((c) => c.id).filter((id) => id !== 'C10')) expect(seen.has(id), id).toBe(true);
+    for (const id of CLUES.map((c) => c.id)) expect(seen.has(id), id).toBe(true);
   });
 
   it('testimonies are locked without trust, open with it', () => {

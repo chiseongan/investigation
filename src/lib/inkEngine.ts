@@ -5,6 +5,7 @@ import mon from '../story/mon.ink';
 import tue from '../story/tue.ink';
 import wed from '../story/wed.ink';
 import thu from '../story/thu.ink';
+import fri from '../story/fri.ink';
 
 export type Effect =
   | { kind: 'trust'; who: TrustId; delta: number }
@@ -51,7 +52,7 @@ export function parseTags(tags: string[] | null | undefined): { speaker: CharId 
   return { speaker, effects, photo };
 }
 
-const STORIES: Record<string, string> = { mon, tue, wed, thu };
+const STORIES: Record<string, string> = { mon, tue, wed, thu, fri };
 
 export interface InkHooks {
   hasClue: (id: string) => boolean;

@@ -265,6 +265,21 @@ export const SCENES: Record<string, SceneDef> = {
     id: 'thu_pe', room: 'counseling', slot: 'pe', start: { c: 5, r: 5 },
     items: [npc('jiwoo', 3, 2, '지우', 'thu_pe_jiwoo')],
   },
+  // ---------- 금 ----------
+  fri_arrive: {
+    id: 'fri_arrive', room: 'hallway', slot: 'arrive', start: { c: 6, r: 7 },
+    items: [
+      npc('teacher', 5, 3, '담임 선생님', 'fri_teacher'),
+      npc('seoyeon', 3, 4, '서연', 'fri_seoyeon'),
+    ],
+  },
+  fri_break: {
+    id: 'fri_break', room: 'classroom', slot: 'break', start: { c: 8, r: 9 },
+    items: [
+      npc('minjun', 8, 4, '민준', 'fri_minjun'),
+      npc('jiwoo', 1, 6, '지우', 'fri_jiwoo'),
+    ],
+  },
 };
 
 export interface DayDef {
@@ -279,7 +294,7 @@ export const DAYS: DayDef[] = [
   { id: 'tue', label: '화요일', scenes: { arrive: 'tue_arrive', break: 'tue_break', lunch: 'tue_lunch', pe: 'tue_pe' } },
   { id: 'wed', label: '수요일', scenes: { break: 'wed_break', lunch: 'wed_lunch', chat: 'wed_chat' } },
   { id: 'thu', label: '목요일', scenes: { break: 'thu_break', lunch: 'thu_lunch', pe: 'thu_pe' } },
-  { id: 'fri', label: '금요일', scenes: {} },
+  { id: 'fri', label: '금요일', scenes: { arrive: 'fri_arrive', break: 'fri_break' } },
 ];
 
 /** 오늘 아직 갈 수 있는 시간대: 이미 본 시간대와 그보다 이른 시간대는 지나간 것으로 본다. */

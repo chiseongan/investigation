@@ -2,7 +2,9 @@
   import Hud from './components/Hud.svelte';
   import Scene from './components/Scene.svelte';
   import Messenger from './components/Messenger.svelte';
-  import { resetSessions } from './lib/session';
+  import Report from './components/Report.svelte';
+  import Ending from './components/Ending.svelte';
+  import { resetSessions, resetSessionsFrom } from './lib/session';
   import StartScreen from './components/StartScreen.svelte';
   import SlotSelect from './components/SlotSelect.svelte';
   import DayEnd from './components/DayEnd.svelte';
@@ -10,7 +12,7 @@
   import { DAY_SECONDS } from './data/config';
   import { DAYS, ROOMS, SCENES, SLOT_LABEL } from './data/rooms';
   import { DayClock } from './lib/clock';
-  import { enterScene, endDay, game, leaveScene, newGame, nextDay, startDay } from './lib/gameState';
+  import { enterScene, endDay, game, leaveScene, newGame, nextDay, openReport, rewindTo, startDay, submitReport } from './lib/gameState';
 
   let clock: DayClock | null = $state(null);
   let busy = $state(false); // 대사·선택 중에는 타이머 정지
@@ -35,6 +37,19 @@
     busy = false;
     if (first) startDay();
     else nextDay();
+    clock = new DayClock(DAY_SECONDS, () => {
+      bell = true;
+    });
+  }
+
+  /** 되감기: 고른 요일 아침으로. 그 전 요일에 모은 단서는 남는다. */
+  function rewind(dayIndex: number) {
+    clock?.stop();
+    bell = false;
+    busy = false;
+    notebookOpen = false;
+    resetSessionsFrom(dayIndex);
+    rewindTo(dayIndex);
     clock = new DayClock(DAY_SECONDS, () => {
       bell = true;
     });
@@ -83,6 +98,10 @@
       }}
       onBegin={() => beginDay(true)}
     />
+  {:else if $game.phase === 'report'}
+    <Report gs={$game} onSubmit={(r) => submitReport(r)} />
+  {:else if $game.phase === 'ending' && $game.verdict}
+    <Ending gs={$game} onRewind={rewind} onRestart={restart} />
   {:else}
     <Hud
       dayNo={$game.dayIndex + 1}
@@ -114,7 +133,7 @@
         {/if}
       {/key}
     {:else if $game.phase === 'dayEnd'}
-      <DayEnd {day} gs={$game} {hasNext} onNext={() => beginDay(false)} onNotebook={() => (notebookOpen = true)} onRestart={restart} />
+      <DayEnd {day} gs={$game} {hasNext} onNext={() => beginDay(false)} onReport={openReport} onNotebook={() => (notebookOpen = true)} onRestart={restart} />
     {/if}
   {/if}
 

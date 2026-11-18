@@ -8,9 +8,10 @@
     gs,
     hasNext,
     onNext,
+    onReport,
     onNotebook,
     onRestart,
-  }: { day: DayDef; gs: GameState; hasNext: boolean; onNext: () => void; onNotebook: () => void; onRestart: () => void } = $props();
+  }: { day: DayDef; gs: GameState; hasNext: boolean; onNext: () => void; onReport: () => void; onNotebook: () => void; onRestart: () => void } = $props();
 
   const got = $derived(gs.clues.map((id) => clueById(id)).filter((c) => c && c.day === day.id));
 </script>
@@ -28,7 +29,7 @@
     {#if hasNext}
       <button class="btn primary" onclick={onNext}>다음 날로</button>
     {:else}
-      <p class="wip">금요일 최종 보고는 아직 만드는 중이에요. (개발 2단계: 월~목요일까지 플레이 가능)</p>
+      <button class="btn primary" onclick={onReport}>최종 보고서 작성</button>
     {/if}
     <button class="btn ghost" onclick={onRestart}>새 수사 시작</button>
   </div>
@@ -105,10 +106,5 @@
     background: #fff;
     color: #1f2a44;
     border: 2px solid #cfd7e5;
-  }
-  .wip {
-    margin: 0;
-    font-size: 13px;
-    color: #5b6781;
   }
 </style>

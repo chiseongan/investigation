@@ -5,7 +5,18 @@ import { CLUES, INFERENCES, type Inference } from '../data/clues';
 import type { TrustId } from '../data/characters';
 import { DAYS, availableSlots, type SlotId } from '../data/rooms';
 
-export type Phase = 'title' | 'briefing' | 'slot' | 'scene' | 'dayEnd';
+import { judge, type EndingId, type Report, type Verdict } from '../data/endings';
+
+export type Phase = 'title' | 'briefing' | 'slot' | 'scene' | 'dayEnd' | 'report' | 'ending';
+
+/** 하루를 시작할 때의 기록. 되감기 하면 이 시점으로 돌아간다. (그날 이후 얻은 단서만 사라진다) */
+export interface DaySnapshot {
+  clues: string[];
+  trust: Record<TrustId, number>;
+  seen: string[];
+  shared: boolean;
+  inferred: string[];
+}
 
 export interface GameState {
   phase: Phase;
@@ -18,6 +29,9 @@ export interface GameState {
   seen: string[]; // 상호작용 완료 기록 "sceneId:itemId"
   shared: boolean; // 수요일 공유 버튼 함정
   inferred: string[]; // 수사 보드에서 만든 추론 ("a+b")
+  snapshots: Record<number, DaySnapshot>; // 요일 시작 시점 기록 (되감기용)
+  report: Report | null; // 금요일 최종 보고서
+  verdict: Verdict | null;
 }
 
 export function initialState(): GameState {
@@ -32,6 +46,9 @@ export function initialState(): GameState {
     seen: [],
     shared: false,
     inferred: [],
+    snapshots: {},
+    report: null,
+    verdict: null,
   };
 }
 
@@ -51,7 +68,42 @@ export function setPhase(phase: Phase) {
 /** 하루 시작 */
 export function startDay() {
   // 행동 제한 없음: 그날의 모든 시간대를 순서대로 볼 수 있다. (actionsLeft = 남은 시간대 수)
-  game.update((g) => ({ ...g, phase: 'slot', actionsLeft: Object.keys(DAYS[g.dayIndex].scenes).length, slotsUsed: [], sceneId: null }));
+  game.update((g) => ({
+    ...g,
+    phase: 'slot',
+    actionsLeft: Object.keys(DAYS[g.dayIndex].scenes).length,
+    slotsUsed: [],
+    sceneId: null,
+    snapshots: {
+      ...g.snapshots,
+      [g.dayIndex]: { clues: [...g.clues], trust: { ...g.trust }, seen: [...g.seen], shared: g.shared, inferred: [...g.inferred] },
+    },
+  }));
+}
+
+/** 최종 보고서 작성 화면으로 */
+export function openReport() {
+  game.update((g) => ({ ...g, phase: 'report', sceneId: null }));
+}
+
+/** 최종 보고서 제출 → 엔딩 판정 */
+export function submitReport(report: Report): EndingId {
+  const g = get(game);
+  const verdict = judge(report, g.shared, g.trust.jiwoo);
+  game.update((s) => ({ ...s, report, verdict, phase: 'ending' }));
+  return verdict.ending;
+}
+
+/** 되감기: 고른 요일을 시작하던 때로 돌아간다. 그 전 요일에 얻은 단서와 관계는 그대로 남는다. */
+export function rewindTo(dayIndex: number) {
+  game.update((g) => {
+    const snap = g.snapshots[dayIndex];
+    if (!snap) return g;
+    const kept: Record<number, DaySnapshot> = {};
+    for (const k of Object.keys(g.snapshots)) if (Number(k) <= dayIndex) kept[Number(k)] = g.snapshots[Number(k)];
+    return { ...g, ...snap, dayIndex, snapshots: kept, report: null, verdict: null };
+  });
+  startDay();
 }
 
 export function enterScene(slot: SlotId, sceneId: string) {
