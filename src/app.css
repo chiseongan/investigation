@@ -1,0 +1,36 @@
+/* 한글은 시스템 폰트 사용(폰트 번들 없음). 색상: HUD #1F2A44, 배경 #EEF1F5, 버튼 #3B6FD8, 단서 #E8A33D, 경고 #B23A48 */
+:root {
+  --hud: #1f2a44;
+  --bg: #eef1f5;
+  --primary: #3b6fd8;
+  --clue: #e8a33d;
+  --danger: #b23a48;
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: #dfe4ec;
+  font-family: Pretendard, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', system-ui, sans-serif;
+  color: #1d2438;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+button {
+  font-family: inherit;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+button:focus-visible {
+  outline: 3px solid #e8a33d;
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
