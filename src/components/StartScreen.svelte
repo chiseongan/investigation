@@ -2,7 +2,13 @@
   // 시작 화면 + 수사관 임명(브리핑, 규칙 1장)
   import { DAY_SECONDS } from '../data/config';
 
-  let { phase, onNew, onBegin }: { phase: 'title' | 'briefing'; onNew: () => void; onBegin: () => void } = $props();
+  let {
+    phase,
+    canResume = false,
+    onResume = () => {},
+    onNew,
+    onBegin,
+  }: { phase: 'title' | 'briefing'; canResume?: boolean; onResume?: () => void; onNew: () => void; onBegin: () => void } = $props();
 </script>
 
 <main class="screen">
@@ -13,8 +19,9 @@
       <p class="sub">이 이야기의 학교와 인물은 모두 가상입니다.</p>
     </div>
     <div class="actions">
-      <button class="btn primary" onclick={onNew}>새 수사 시작</button>
-      <p class="fine">소리 없음 · 로그인 없음 · 개인정보를 수집하지 않아요</p>
+      {#if canResume}<button class="btn primary" onclick={onResume}>이어서 하기</button>{/if}
+      <button class="btn" class:primary={!canResume} class:ghost={canResume} onclick={onNew}>새 수사 시작</button>
+      <p class="fine">소리 없음 · 로그인 없음 · 개인정보를 수집하지 않아요{canResume ? ' · 이어하기는 이 탭에만 남아요' : ''}</p>
     </div>
   {:else}
     <div class="center left">
@@ -133,5 +140,10 @@
   .primary {
     background: #3b6fd8;
     color: #fff;
+  }
+  .ghost {
+    background: transparent;
+    color: #dbe3f5;
+    border: 2px solid #5b6b91;
   }
 </style>

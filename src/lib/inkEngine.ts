@@ -99,4 +99,13 @@ export class InkSession {
   choose(index: number) {
     this.story.ChooseChoiceIndex(index);
   }
+
+  /** 이어하기용: 방문 횟수·한 번만 나오는 선택지·변수를 JSON 문자열로 */
+  saveState(): string {
+    return this.story.state.toJson();
+  }
+
+  loadState(json: string) {
+    this.story.state.LoadJson(json);
+  }
 }

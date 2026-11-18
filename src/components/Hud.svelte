@@ -107,7 +107,6 @@
   @keyframes bump {
     30% {
       transform: scale(1.3);
-      color: #e8a33d;
     }
   }
 </style>

@@ -18,6 +18,24 @@ export function sessionFor(day: string): InkSession {
   return s;
 }
 
+/** 이어하기용: 요일별 대본 진행을 문자열로 내보내고 되돌린다. */
+export function exportSessions(): Record<string, string> {
+  const out: Record<string, string> = {};
+  cache.forEach((s, day) => (out[day] = s.saveState()));
+  return out;
+}
+
+export function importSessions(saved: Record<string, string>) {
+  cache.clear();
+  for (const [day, json] of Object.entries(saved)) {
+    try {
+      sessionFor(day).loadState(json);
+    } catch {
+      cache.delete(day); // 읽을 수 없으면 그 요일은 처음부터
+    }
+  }
+}
+
 /** 되감기: 고른 요일과 그 뒤 요일의 대본 진행만 초기화한다. */
 export function resetSessionsFrom(dayIndex: number) {
   DAYS.forEach((d, i) => {

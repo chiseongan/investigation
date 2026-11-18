@@ -13,6 +13,35 @@
   import { DAYS, ROOMS, SCENES, SLOT_LABEL } from './data/rooms';
   import { DayClock } from './lib/clock';
   import { enterScene, endDay, game, leaveScene, newGame, nextDay, openReport, rewindTo, startDay, submitReport } from './lib/gameState';
+  import { clearSave, readSave, startAutosave } from './lib/save';
+  import { importSessions } from './lib/session';
+  import { onMount } from 'svelte';
+
+  // 같은 탭에서 새로고침했다면 이어서 할 수 있다 (sessionStorage, 탭을 닫으면 사라짐)
+  let saved = $state(readSave());
+  onMount(() => startAutosave());
+
+  function resume() {
+    const s = saved;
+    if (!s) return;
+    saved = null;
+    importSessions(s.ink);
+    game.set({ ...s.game });
+    // 장면 도중이었다면 그 시간대는 마친 것으로 보고 다음으로
+    if ($game.phase === 'scene') leaveScene();
+    bell = false;
+    busy = false;
+    if ($game.phase === 'slot') {
+      clock = new DayClock(DAY_SECONDS, () => {
+        bell = true;
+      });
+    }
+  }
+
+  function discardSave() {
+    saved = null;
+    clearSave();
+  }
 
   let clock: DayClock | null = $state(null);
   let busy = $state(false); // 대사·선택 중에는 타이머 정지
@@ -59,6 +88,7 @@
     clock?.stop();
     clock = null;
     resetSessions();
+    discardSave();
     bell = false;
     busy = false;
     notebookOpen = false;
@@ -92,8 +122,11 @@
   {#if $game.phase === 'title' || $game.phase === 'briefing'}
     <StartScreen
       phase={$game.phase}
+      canResume={!!saved}
+      onResume={resume}
       onNew={() => {
         resetSessions();
+        discardSave();
         newGame();
       }}
       onBegin={() => beginDay(true)}
