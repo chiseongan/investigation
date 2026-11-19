@@ -1,6 +1,8 @@
 <script lang="ts">
-  // 대화형(비주얼노벨) 장면: 배경 + 인물 그림 + 대사창. 걷기 없이 인물을 눌러 대화한다.
+  // 대화형(비주얼노벨) 장면: 배경 + 인물 그림 + 대사창.
+  // 학생을 고르지 않는다. 시간대가 흐르면서 그 자리의 인물들을 차례로 마주치고, 대화가 이어진다.
   // 대본·단서·신뢰 처리는 탐색형(Scene.svelte)과 같다.
+  import { onMount } from 'svelte';
   import { CHARACTERS } from '../data/characters';
   import { MANIFEST } from '../assets/manifest';
   import { clueById } from '../data/clues';
@@ -23,16 +25,16 @@
   // svelte-ignore state_referenced_locally
   const scene = SCENES[sceneId];
   const room = ROOMS[scene.room];
-  // 왼쪽부터 오른쪽 순서로 세운다 (교실 안의 열 번호 기준). 장식용 친구들은 세우지 않는다.
-  const targets: Placed[] = scene.items.filter((i) => i.knot).sort((a, b) => a.c - b.c);
-
   const wallColor = room.wall?.right ?? '#DDE5EF';
   const floorColor = room.floor?.[0] ?? '#D9C9A6';
 
-  let doneIds: string[] = $state(
-    get(game).seen.filter((s) => s.startsWith(sceneId + ':')).map((s) => s.slice(sceneId.length + 1)),
-  );
+  // 만나는 순서는 장면에 적힌 순서. 이미 마친 상대는 건너뛴다.
+  const seen = get(game).seen.filter((s) => s.startsWith(sceneId + ':')).map((s) => s.slice(sceneId.length + 1));
+  const queue: Placed[] = scene.items.filter((i) => i.knot && !seen.includes(i.id));
 
+  type Step = 'talking' | 'clue' | 'between' | 'over';
+  let step: Step = $state('over');
+  let idx = $state(0);
   let session: InkSession | null = $state(null);
   let current = $state<Placed | null>(null);
   let line = $state<{ speaker: CharId | null; text: string } | null>(null);
@@ -50,22 +52,33 @@
     }
   }
 
-  function start(it: Placed) {
-    if (!it.knot || session) return;
+  onMount(() => {
+    if (queue.length) {
+      onBusy(true);
+      meet(0);
+    } else {
+      step = 'over';
+    }
+  });
+
+  function meet(i: number) {
+    const it = queue[i];
+    if (!it?.knot) return finish();
+    idx = i;
     current = it;
     pendingClues = [];
     line = null;
     choices = null;
-    onBusy(true);
     session = sessionFor(dayId);
     session.begin(it.knot);
+    step = 'talking';
     advance();
   }
 
   function advance() {
     if (!session) return;
     const beat: Beat = session.step();
-    if (beat.type === 'end') return finishInteraction();
+    if (beat.type === 'end') return endEncounter();
     if (beat.type === 'line') {
       apply(beat.effects);
       line = { speaker: beat.speaker, text: beat.text };
@@ -85,67 +98,61 @@
     advance();
   }
 
-  function finishInteraction() {
-    if (current) {
-      markSeen(`${sceneId}:${current.id}`);
-      if (!doneIds.includes(current.id)) doneIds = [...doneIds, current.id];
-    }
+  function endEncounter() {
+    if (current) markSeen(`${sceneId}:${current.id}`);
     session = null;
     line = null;
     choices = null;
-    nextClueOrExit();
+    nextClueOrOn();
   }
 
-  function nextClueOrExit() {
+  function nextClueOrOn() {
     const id = pendingClues.shift();
     if (id) {
       clueCard = clueById(id) ?? null;
+      step = 'clue';
       return;
     }
     clueCard = null;
+    if (idx + 1 < queue.length) step = 'between';
+    else finish();
+  }
+
+  function finish() {
+    step = 'over';
     current = null;
     onBusy(false);
   }
 
-  const talking = $derived(!!session);
   const speakerName = $derived(line?.speaker ? CHARACTERS[line.speaker].name : null);
-  /** 말하는 사람이 장면에 서 있는 인물이면 앞으로 나온다 */
-  const speakingId = $derived(line?.speaker ? targets.find((t) => t.char === line!.speaker)?.id ?? null : null);
+  const next = $derived(queue[idx + 1] ?? null);
 </script>
 
 <section class="vn" style="--wall: {wallColor}; --floor: {floorColor}">
   <div class="stage">
     <p class="place">{room.name} · {SLOT_LABEL[scene.slot]}</p>
+    {#if queue.length}<p class="count">만남 {Math.min(idx + (step === 'over' ? 1 : 1), queue.length)} / {queue.length}</p>{/if}
     <div class="cast">
-      {#each targets as t (t.id)}
-        {@const dim = talking && current?.id !== t.id}
-        <button
-          class="who"
-          class:dim
-          class:front={speakingId === t.id || (talking && !speakingId && current?.id === t.id)}
-          disabled={talking || !!clueCard}
-          onclick={() => start(t)}
-          aria-label="{t.kind === 'npc' ? '말 걸기' : '살펴보기'} {t.label}"
-        >
-          <img src={sprite(t.sprite)} alt="" draggable="false" />
-          <span class="tag">{t.label}{doneIds.includes(t.id) ? ' · 완료' : ''}</span>
-          {#if !talking && !clueCard && !doneIds.includes(t.id)}
-            <span class="mark" aria-hidden="true">{t.kind === 'npc' ? '!' : '?'}</span>
-          {/if}
-        </button>
-      {/each}
+      {#if current && step !== 'over'}
+        {#key current.id}
+          <div class="who" class:front={!!line?.speaker && line.speaker === current.char}>
+            <img src={sprite(current.sprite)} alt="" draggable="false" />
+            <span class="tag">{current.label}</span>
+          </div>
+        {/key}
+      {/if}
     </div>
   </div>
 
   <div class="box">
-    {#if clueCard}
+    {#if step === 'clue' && clueCard}
       <div class="card" role="status">
         <p class="eyebrow clue">단서 획득 · {clueCard.type}</p>
         <h3>{clueCard.title}</h3>
         <p class="desc">{clueCard.desc}</p>
       </div>
-      <button class="btn primary" onclick={nextClueOrExit}>수사 수첩에 기록됨 · 계속</button>
-    {:else if talking}
+      <button class="btn primary" onclick={nextClueOrOn}>수사 수첩에 기록됨 · 계속</button>
+    {:else if step === 'talking'}
       {#if speakerName}<p class="name">{speakerName}</p>{/if}
       <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
       <div class="textwrap" onclick={() => !choices && advance()}>
@@ -162,9 +169,12 @@
       {:else}
         <button class="btn next" onclick={advance}>다음</button>
       {/if}
+    {:else if step === 'between' && next}
+      <p class="guide">시간이 흘러 {SLOT_LABEL[scene.slot]} 시간이 이어집니다. 다음에 마주친 상대는 <b>{next.label}</b>.</p>
+      <button class="btn primary" onclick={() => meet(idx + 1)}>계속</button>
     {:else}
-      <p class="guide">대화하고 싶은 사람이나 물건을 눌러 보세요. 머리 위 <b class="bang">!</b> 는 대화, <b class="bang">?</b> 는 관찰할 수 있다는 뜻이에요.</p>
-      <button class="btn ghost" onclick={onFinish}>이 시간대 마치기</button>
+      <p class="guide">{queue.length ? '이 시간대에 마주칠 사람은 모두 만났어요.' : '이 시간대에는 더 마주칠 사람이 없어요.'}</p>
+      <button class="btn primary" onclick={onFinish}>다음 시간으로</button>
     {/if}
   </div>
 </section>
@@ -199,38 +209,41 @@
     font-size: 13px;
     font-weight: 700;
   }
+  .count {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    margin: 0;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #1f2a44;
+    font-size: 13px;
+    font-weight: 700;
+  }
   .cast {
     display: flex;
-    justify-content: space-evenly;
+    justify-content: center;
     align-items: flex-end;
-    gap: 4px;
+    min-height: 220px;
     padding: 0 8px 14px;
   }
   .who {
-    position: relative;
-    flex: 1 1 0;
-    max-width: 118px;
-    min-height: 44px;
-    padding: 0;
-    border: 0;
-    background: none;
-    font: inherit;
-    cursor: pointer;
+    width: 150px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    transition:
-      opacity 0.2s,
-      transform 0.2s;
-  }
-  .who:disabled {
-    cursor: default;
-  }
-  .who.dim {
-    opacity: 0.4;
+    transition: transform 0.2s;
+    animation: enter 0.35s ease-out;
   }
   .who.front {
     transform: translateY(-8px);
+  }
+  @keyframes enter {
+    from {
+      opacity: 0;
+      transform: translateX(40px);
+    }
   }
   .who img {
     width: 100%;
@@ -247,27 +260,6 @@
     font-size: 13px;
     font-weight: 700;
     white-space: nowrap;
-  }
-  .mark {
-    position: absolute;
-    top: -4px;
-    left: 50%;
-    margin-left: -11px;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: #e8a33d;
-    color: #1f2a44;
-    font-size: 14px;
-    font-weight: 800;
-    line-height: 22px;
-    text-align: center;
-    animation: bob 1.2s ease-in-out infinite;
-  }
-  @keyframes bob {
-    50% {
-      transform: translateY(-4px);
-    }
   }
   .box {
     flex: none;
@@ -318,17 +310,6 @@
     line-height: 1.55;
     color: #2a3550;
   }
-  .bang {
-    display: inline-block;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: #e8a33d;
-    color: #1f2a44;
-    text-align: center;
-    line-height: 18px;
-    font-size: 12px;
-  }
   .btn {
     min-height: 48px;
     padding: 10px 14px;
@@ -342,11 +323,6 @@
   .primary {
     background: #3b6fd8;
     color: #fff;
-  }
-  .ghost {
-    background: #eef1f5;
-    color: #2a3550;
-    font-size: 14px;
   }
   .next {
     align-self: flex-end;
@@ -396,7 +372,7 @@
     }
   }
   @media (prefers-reduced-motion: reduce) {
-    .mark,
+    .who,
     .text,
     .card {
       animation: none;
