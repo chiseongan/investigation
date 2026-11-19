@@ -227,7 +227,7 @@
     {:else if step === 'leaving'}
       <div class="textwrap"></div>
     {:else if step === 'talking'}
-      {#if speakerName}<p class="name">{speakerName}</p>{/if}
+      <div class="namerow">{#if speakerName}<p class="name">{speakerName}</p>{/if}</div>
       <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
       <div class="textwrap" onclick={() => !choices && advance()}>
         {#key line?.text}
@@ -244,7 +244,7 @@
         <button class="btn next" onclick={advance}>다음</button>
       {/if}
     {:else if step === 'reflect' && thoughts.length}
-      <p class="eyebrow">{current?.label} · 느낀 점</p>
+      <div class="namerow"><p class="eyebrow">{current?.label} · 느낀 점</p></div>
       <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
       <div class="textwrap" onclick={nextThought}>
         {#key ti}
@@ -261,6 +261,9 @@
 
 <style>
   .vn {
+    --boxh: clamp(300px, 48dvh, 400px);
+    /* 인물 그림이 무대 높이를 넘지 않게: 화면 높이 - 위 표시줄 - 대화창 - 이름표 */
+    --figh: calc(100dvh - 64px - var(--boxh) - 52px);
     flex: 1;
     min-height: 0;
     display: flex;
@@ -356,6 +359,7 @@
   }
   .who img {
     width: 100%;
+    max-width: calc(var(--figh) * 0.5714);
     height: auto;
     display: block;
     pointer-events: none;
@@ -370,9 +374,11 @@
     font-weight: 700;
     white-space: nowrap;
   }
+  /* 대화창은 글이 길든 짧든 항상 같은 크기. 넘치면 안쪽에서만 스크롤된다. */
   .box {
     flex: none;
-    max-height: 56%;
+    box-sizing: border-box;
+    height: var(--boxh);
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -380,10 +386,15 @@
     background: #fff;
     border-radius: 18px 18px 0 0;
     box-shadow: 0 -2px 0 #dfe4ec;
-    overflow-y: auto;
+    overflow: hidden;
+  }
+  .namerow {
+    flex: none;
+    height: 28px;
+    display: flex;
+    align-items: center;
   }
   .name {
-    align-self: flex-start;
     margin: 0;
     padding: 3px 12px;
     border-radius: 999px;
@@ -393,13 +404,18 @@
     font-weight: 800;
   }
   .textwrap {
-    min-height: 72px;
+    flex: 1 1 auto;
+    min-height: 64px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
   .text {
     margin: 0;
     font-size: 17px;
     line-height: 1.6;
     color: #1d2438;
+    overflow-wrap: anywhere;
+    word-break: keep-all;
     animation: rise 0.22s ease-out;
   }
   .text.thought {
@@ -418,12 +434,18 @@
     }
   }
   .guide {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-wrap: anywhere;
+    word-break: keep-all;
     margin: 0;
     font-size: 15px;
     line-height: 1.55;
     color: #2a3550;
   }
   .btn {
+    flex: none;
     min-height: 48px;
     padding: 10px 14px;
     border: 0;
@@ -444,22 +466,37 @@
     color: #fff;
   }
   .choices {
+    flex: 0 1 auto;
+    min-height: 0;
+    max-height: 62%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
     display: flex;
     flex-direction: column;
     gap: 8px;
   }
   .choice {
+    flex: none;
+    overflow-wrap: anywhere;
+    word-break: keep-all;
     text-align: left;
     background: #eef1f5;
     color: #1d2438;
     border: 2px solid #d5dce8;
   }
   .card {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
     padding: 14px;
     border: 2px solid #e8a33d;
     border-radius: 14px;
     background: #fff8ec;
     animation: pop 0.35s cubic-bezier(0.2, 1.2, 0.4, 1);
+  }
+  .namerow .eyebrow {
+    margin: 0;
   }
   .eyebrow {
     margin: 0 0 6px;
@@ -476,6 +513,8 @@
     color: #1f2a44;
   }
   .desc {
+    overflow-wrap: anywhere;
+    word-break: keep-all;
     margin: 0;
     font-size: 15px;
     line-height: 1.55;
