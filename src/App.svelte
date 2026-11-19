@@ -134,7 +134,11 @@
     clearTimeout(captionTimer);
   });
   const CURTAIN_MS = 350;
-  const CAPTION_MS = 1700;
+  // 안내 문구: 검은 화면이 된 뒤 조금 있다가 나타나고, 막이 걷히기 전에 빨리 사라진다
+  const CAPTION_IN_MS = 700; // 문구가 나타나기 시작하는 때
+  const CAPTION_OUT_MS = 2100; // 문구가 사라지기 시작하는 때
+  const CAPTION_MS = 2400; // 검은 화면이 걷히기 시작하는 때
+  let capShow = $state(false);
   /** 어느 요일 어느 시간대의 장면으로 가는지 안내 문구 */
   function placeCaption(dayIndex: number, slot: SlotId, newDay = false): Caption | undefined {
     const d = DAYS[dayIndex];
@@ -157,6 +161,13 @@
     curtain = true;
     clearTimeout(captionTimer);
     caption = cap ?? null;
+    capShow = false;
+    if (cap) {
+      captionTimer = setTimeout(() => {
+        capShow = true;
+        captionTimer = setTimeout(() => (capShow = false), CAPTION_OUT_MS - CAPTION_IN_MS);
+      }, CAPTION_IN_MS);
+    }
     curtainTimer = setTimeout(
       () => {
         action();
@@ -166,6 +177,7 @@
             curtain = false;
             // 막이 걷히는 동안 글자가 먼저 사라지지 않게 잠시 뒤에 지운다
             captionTimer = setTimeout(() => (caption = null), 600);
+            capShow = false;
           }),
         );
       },
@@ -277,7 +289,7 @@
 
   <div class="curtain" class:on={curtain} aria-hidden="true">
     {#if caption}
-      <div class="cap">
+      <div class="cap" class:show={capShow}>
         <p class="ctitle">{caption.title}</p>
         {#if caption.sub}<p class="csub">{caption.sub}</p>{/if}
       </div>
@@ -332,6 +344,12 @@
     padding: 24px;
     text-align: center;
     color: #fff;
+    opacity: 0;
+    transition: opacity 0.2s ease-in; /* 사라질 때는 빠르게 */
+  }
+  .cap.show {
+    opacity: 1;
+    transition: opacity 0.6s ease-out; /* 나타날 때는 천천히 */
   }
   .ctitle {
     margin: 0;
