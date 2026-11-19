@@ -122,16 +122,39 @@
     pause(!($game.phase === 'scene' && !busy && !notebookOpen && !bell));
   });
 
+  // 시간이나 장소가 바뀔 때: 화면이 검게 덮였다가 새 장면이 되어 돌아온다 (투명도만 바뀐다)
+  let curtain = $state(false);
+  let curtainTimer: ReturnType<typeof setTimeout> | undefined;
+  $effect(() => () => clearTimeout(curtainTimer));
+  const CURTAIN_MS = 350;
+  function withCurtain(action: () => void) {
+    if (curtain) return; // 이미 전환 중
+    if (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      action();
+      return;
+    }
+    curtain = true;
+    curtainTimer = setTimeout(() => {
+      action();
+      // 새 화면이 그려진 다음에 막을 걷는다
+      requestAnimationFrame(() => requestAnimationFrame(() => (curtain = false)));
+    }, CURTAIN_MS);
+  }
+
   function closeBell() {
-    bell = false;
-    clock?.stop();
-    endDay();
+    withCurtain(() => {
+      bell = false;
+      clock?.stop();
+      endDay();
+    });
   }
   function finishScene() {
-    busy = false;
-    leaveScene();
-    if ($game.phase === 'dayEnd') clock?.stop();
-    autoEnter();
+    withCurtain(() => {
+      busy = false;
+      leaveScene();
+      if ($game.phase === 'dayEnd') clock?.stop();
+      autoEnter();
+    });
   }
 
   // 단서 수가 바뀔 때 HUD 숫자 튀는 연출 트리거
@@ -141,10 +164,11 @@
 <div class="app">
   {#if intro}
     <Intro
-      onDone={() => {
-        intro = false;
-        beginDay(true);
-      }}
+      onDone={() =>
+        withCurtain(() => {
+          intro = false;
+          beginDay(true);
+        })}
     />
   {:else if $game.phase === 'title' || $game.phase === 'briefing'}
     <StartScreen
@@ -164,7 +188,7 @@
   {:else if $game.phase === 'report'}
     <Report gs={$game} onSubmit={(r) => submitReport(r)} />
   {:else if $game.phase === 'ending' && $game.verdict}
-    <Ending gs={$game} onRewind={rewind} onRestart={restart} />
+    <Ending gs={$game} onRewind={(d) => withCurtain(() => rewind(d))} onRestart={restart} />
   {:else}
     <Hud
       dayNo={$game.dayIndex + 1}
@@ -182,10 +206,11 @@
         {day}
         used={$game.slotsUsed}
         actionsLeft={$game.actionsLeft}
-        onPick={(slot, id) => {
-          sceneKey++;
-          enterScene(slot, id);
-        }}
+        onPick={(slot, id) =>
+          withCurtain(() => {
+            sceneKey++;
+            enterScene(slot, id);
+          })}
       />
     {:else if $game.phase === 'scene' && $game.sceneId}
       {#key sceneKey}
@@ -198,9 +223,11 @@
         {/if}
       {/key}
     {:else if $game.phase === 'dayEnd'}
-      <DayEnd {day} gs={$game} {hasNext} onNext={() => beginDay(false)} onReport={openReport} onNotebook={() => (notebookOpen = true)} onRestart={restart} />
+      <DayEnd {day} gs={$game} {hasNext} onNext={() => withCurtain(() => beginDay(false))} onReport={openReport} onNotebook={() => (notebookOpen = true)} onRestart={restart} />
     {/if}
   {/if}
+
+  <div class="curtain" class:on={curtain} aria-hidden="true"></div>
 
   {#if notebookOpen}
     <Notebook gs={$game} onClose={() => (notebookOpen = false)} />
@@ -229,6 +256,20 @@
     flex-direction: column;
     background: #eef1f5;
     overflow: hidden;
+  }
+  .curtain {
+    position: absolute;
+    inset: 0;
+    z-index: 4000;
+    background: #000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+  }
+  .curtain.on {
+    opacity: 1;
+    pointer-events: auto; /* 전환 중에는 눌러도 반응하지 않게 */
+    transition-duration: 0.35s;
   }
   .bell {
     position: absolute;
