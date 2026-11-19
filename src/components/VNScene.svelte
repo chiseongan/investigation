@@ -22,7 +22,15 @@
     dayId,
     onFinish,
     onBusy,
-  }: { sceneId: string; dayId: string; onFinish: () => void; onBusy: (busy: boolean) => void } = $props();
+    onTransition,
+  }: {
+    sceneId: string;
+    dayId: string;
+    onFinish: () => void;
+    onBusy: (busy: boolean) => void;
+    /** 같은 장소에서 다음 사람으로 넘어갈 때 화면 전환을 걸어 준다 */
+    onTransition: (action: () => void) => void;
+  } = $props();
 
   // 장면은 {#key} 로 매번 새로 만들어지므로 초기값만 읽어도 된다
   // svelte-ignore state_referenced_locally
@@ -160,10 +168,20 @@
     else proceed();
   }
 
+  let moving = false; // 전환이 걸린 동안 중복 클릭 방지
   function proceed() {
-    thoughts = [];
-    if (idx + 1 < queue.length) meet(idx + 1);
-    else finish();
+    if (moving) return;
+    if (idx + 1 < queue.length) {
+      moving = true;
+      onTransition(() => {
+        moving = false;
+        thoughts = [];
+        meet(idx + 1);
+      });
+    } else {
+      thoughts = [];
+      finish();
+    }
   }
 
   /** 마지막 대화가 끝나면 시간을 넘기는 선택 없이 자동으로 다음 시간·장소로 넘어간다 */
