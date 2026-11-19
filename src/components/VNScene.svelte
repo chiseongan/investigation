@@ -192,6 +192,8 @@
 <section class="vn">
   <div class="stage">
     <VNBackground room={room.id} {t} />
+    <!-- 선택지가 뜰 때 배경을 살짝 흐리게 (투명도만 바뀐다) -->
+    <div class="blur" class:on={!!choices && step === 'talking'} aria-hidden="true"></div>
     <p class="place">{room.name} · {SLOT_LABEL[scene.slot]}</p>
     <div class="cast">
       {#if step === 'talking' || step === 'leaving'}
@@ -214,6 +216,14 @@
         </div>
       {/if}
     </div>
+    {#if choices && step === 'talking'}
+      <!-- 선택지는 인물이 있는 화면 위에 띄운다 -->
+      <div class="choices" role="group" aria-label="선택지">
+        {#each choices as c (c.index)}
+          <button class="btn choice" onclick={() => choose(c.index)}>{c.text}</button>
+        {/each}
+      </div>
+    {/if}
   </div>
 
   <div class="box">
@@ -227,20 +237,14 @@
     {:else if step === 'leaving'}
       <div class="textwrap"></div>
     {:else if step === 'talking'}
-      {#if !choices}<div class="namerow">{#if speakerName}<p class="name">{speakerName}</p>{/if}</div>{/if}
+      <div class="namerow">{#if speakerName}<p class="name">{speakerName}</p>{/if}</div>
       <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-      <div class="textwrap" class:compact={!!choices} onclick={() => !choices && advance()}>
+      <div class="textwrap" onclick={() => !choices && advance()}>
         {#key line?.text}
           <p class="text" class:narr={!line?.speaker}>{line?.text ?? ''}</p>
         {/key}
       </div>
-      {#if choices}
-        <div class="choices">
-          {#each choices as c (c.index)}
-            <button class="btn choice" onclick={() => choose(c.index)}>{c.text}</button>
-          {/each}
-        </div>
-      {:else}
+      {#if !choices}
         <button class="btn next" onclick={advance}>다음</button>
       {/if}
     {:else if step === 'reflect' && thoughts.length}
@@ -396,9 +400,6 @@
     overflow-y: auto;
     overscroll-behavior: contain;
   }
-  .textwrap.compact {
-    min-height: 44px;
-  }
   .text {
     margin: 0;
     font-size: 17px;
@@ -444,27 +445,48 @@
     background: #1f2a44;
     color: #fff;
   }
+  /* 배경만 흐리게: 인물보다 아래, 배경보다 위 */
+  .blur {
+    position: absolute;
+    inset: 0;
+    background: rgba(31, 42, 68, 0.14);
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .blur.on {
+    opacity: 1;
+  }
+  /* 선택지: 인물 화면 위에 띄운다 */
   .choices {
-    flex: 0 1 auto;
-    min-height: 0;
-    max-height: 62%;
-    overflow-y: auto;
-    overscroll-behavior: contain;
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    top: 44px;
+    bottom: 10px;
+    z-index: 2;
     display: flex;
     flex-direction: column;
+    justify-content: center;
     gap: 8px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    animation: rise 0.25s ease-out;
   }
   .choice {
     flex: none;
     min-height: 44px;
-    padding: 8px 12px;
+    padding: 8px 14px;
     font-size: 15px;
     overflow-wrap: anywhere;
     word-break: keep-all;
     text-align: left;
-    background: #eef1f5;
+    background: rgba(255, 255, 255, 0.96);
     color: #1d2438;
-    border: 2px solid #d5dce8;
+    border: 2px solid #3b6fd8;
+    box-shadow: 0 2px 8px rgba(31, 42, 68, 0.25);
   }
   .card {
     flex: 1 1 auto;
@@ -508,6 +530,7 @@
   @media (prefers-reduced-motion: reduce) {
     .who,
     .text,
+    .choices,
     .card {
       animation: none;
     }
