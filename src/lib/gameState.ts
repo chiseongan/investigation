@@ -18,7 +18,11 @@ export interface DaySnapshot {
   inferred: string[];
 }
 
+/** explore: 쿼터뷰 방을 걸어 다니는 탐색형 / novel: 배경·인물 그림과 대사창만 있는 대화형(비주얼노벨) */
+export type Mode = 'explore' | 'novel';
+
 export interface GameState {
+  mode: Mode;
   phase: Phase;
   dayIndex: number; // 0 = 월
   actionsLeft: number;
@@ -36,6 +40,7 @@ export interface GameState {
 
 export function initialState(): GameState {
   return {
+    mode: 'explore',
     phase: 'title',
     dayIndex: 0,
     actionsLeft: 0,
@@ -59,6 +64,10 @@ export const realClueCount = derived(game, ($g) => $g.clues.filter((id) => !CLUE
 
 export function newGame() {
   game.set({ ...initialState(), phase: 'briefing' });
+}
+
+export function setMode(mode: Mode) {
+  game.update((g) => ({ ...g, mode }));
 }
 
 export function setPhase(phase: Phase) {

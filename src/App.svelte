@@ -12,7 +12,8 @@
   import { DAY_SECONDS } from './data/config';
   import { DAYS, ROOMS, SCENES, SLOT_LABEL } from './data/rooms';
   import { DayClock } from './lib/clock';
-  import { enterScene, endDay, game, leaveScene, newGame, nextDay, openReport, rewindTo, startDay, submitReport } from './lib/gameState';
+  import VNScene from './components/VNScene.svelte';
+  import { enterScene, endDay, game, leaveScene, newGame, nextDay, openReport, rewindTo, setMode, startDay, submitReport } from './lib/gameState';
   import { clearSave, readSave, startAutosave } from './lib/save';
   import { importSessions } from './lib/session';
   import { onMount } from 'svelte';
@@ -26,7 +27,7 @@
     if (!s) return;
     saved = null;
     importSessions(s.ink);
-    game.set({ ...s.game });
+    game.set({ ...s.game, mode: s.game.mode ?? 'explore' });
     // 장면 도중이었다면 그 시간대는 마친 것으로 보고 다음으로
     if ($game.phase === 'scene') leaveScene();
     bell = false;
@@ -129,7 +130,10 @@
         discardSave();
         newGame();
       }}
-      onBegin={() => beginDay(true)}
+      onBegin={(mode) => {
+        setMode(mode);
+        beginDay(true);
+      }}
     />
   {:else if $game.phase === 'report'}
     <Report gs={$game} onSubmit={(r) => submitReport(r)} />
@@ -161,6 +165,8 @@
       {#key sceneKey}
         {#if scene?.kind === 'messenger'}
           <Messenger sceneId={$game.sceneId} knot={scene.knot ?? ''} dayId={day.id} onExit={finishScene} onBusy={(b) => (busy = b)} />
+        {:else if $game.mode === 'novel'}
+          <VNScene sceneId={$game.sceneId} dayId={day.id} onFinish={finishScene} onBusy={(b) => (busy = b)} />
         {:else}
           <Scene sceneId={$game.sceneId} dayId={day.id} onFinish={finishScene} onBusy={(b) => (busy = b)} />
         {/if}

@@ -1,6 +1,7 @@
 <script lang="ts">
   // 시작 화면 + 수사관 임명(브리핑, 규칙 1장)
   import { DAY_SECONDS } from '../data/config';
+  import type { Mode } from '../lib/gameState';
 
   let {
     phase,
@@ -8,7 +9,7 @@
     onResume = () => {},
     onNew,
     onBegin,
-  }: { phase: 'title' | 'briefing'; canResume?: boolean; onResume?: () => void; onNew: () => void; onBegin: () => void } = $props();
+  }: { phase: 'title' | 'briefing'; canResume?: boolean; onResume?: () => void; onNew: () => void; onBegin: (mode: Mode) => void } = $props();
 </script>
 
 <main class="screen">
@@ -34,14 +35,19 @@
         <ul>
           <li>하루는 등교, 쉬는 시간, 점심 같은 <b>시간대</b>로 나뉘어요. 앞 시간대를 관찰하면 다음 시간대가 열립니다.</li>
           <li>하루는 약 <b>{Math.round(DAY_SECONDS / 60)}분</b>. 종이 울리면 하루가 끝납니다.</li>
-          <li>바닥을 탭해 이동하고, 인물이나 물건 바로 옆에서 대화·관찰을 시작합니다.</li>
+          <li>탐색형은 바닥을 탭해 이동하고 인물 옆에서, 대화형은 장면 속 인물을 눌러서 대화를 시작합니다. 이야기와 단서는 같아요.</li>
           <li>어떻게 말을 걸지는 <b>스스로 판단</b>하세요. 표시나 점수는 없습니다. 사람들은 당신의 말과 태도에 따라 반응할 거예요.</li>
           <li>거칠어 보여도 장난일 수 있고, 평범해 보여도 신호일 수 있어요. 신중하게 판단하세요.</li>
         </ul>
       </div>
     </div>
     <div class="actions">
-      <button class="btn primary" onclick={onBegin}>수사 시작</button>
+      <button class="btn primary" onclick={() => onBegin('explore')}>
+        탐색형으로 시작<small>교실을 걸어 다니며 인물에게 다가가요</small>
+      </button>
+      <button class="btn primary alt" onclick={() => onBegin('novel')}>
+        대화형으로 시작<small>배경과 인물 그림, 대사창으로 진행해요</small>
+      </button>
     </div>
   {/if}
 </main>
@@ -140,6 +146,17 @@
   .primary {
     background: #3b6fd8;
     color: #fff;
+  }
+  .primary.alt {
+    background: #2a3757;
+    border: 2px solid #3b6fd8;
+  }
+  .btn small {
+    display: block;
+    margin-top: 2px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #dbe3f5;
   }
   .ghost {
     background: transparent;
