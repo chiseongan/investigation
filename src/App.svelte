@@ -14,6 +14,7 @@
   import { get } from 'svelte/store';
   import { DayClock } from './lib/clock';
   import VNScene from './components/VNScene.svelte';
+  import Intro from './components/Intro.svelte';
   import { enterScene, endDay, game, leaveScene, newGame, nextDay, openReport, rewindTo, setMode, startDay, submitReport } from './lib/gameState';
   import { clearSave, readSave, startAutosave } from './lib/save';
   import { importSessions } from './lib/session';
@@ -51,6 +52,7 @@
   let notebookOpen = $state(false);
   let bell = $state(false);
   let sceneKey = $state(0);
+  let intro = $state(false); // 시작 인트로(교문 앞) 보는 중
 
   const day = $derived(DAYS[$game.dayIndex]);
   const scene = $derived($game.sceneId ? SCENES[$game.sceneId] : null);
@@ -105,6 +107,7 @@
     clock = null;
     resetSessions();
     discardSave();
+    intro = false;
     bell = false;
     busy = false;
     notebookOpen = false;
@@ -136,7 +139,14 @@
 </script>
 
 <div class="app">
-  {#if $game.phase === 'title' || $game.phase === 'briefing'}
+  {#if intro}
+    <Intro
+      onDone={() => {
+        intro = false;
+        beginDay(true);
+      }}
+    />
+  {:else if $game.phase === 'title' || $game.phase === 'briefing'}
     <StartScreen
       phase={$game.phase}
       canResume={!!saved}
@@ -148,7 +158,7 @@
       }}
       onBegin={(mode) => {
         setMode(mode);
-        beginDay(true);
+        intro = true;
       }}
     />
   {:else if $game.phase === 'report'}

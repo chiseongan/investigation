@@ -95,6 +95,32 @@
       <path d="M162 206v32M238 206v32" stroke="#8E6A3F" stroke-width="4" />
       <rect x="22" y="196" width="26" height="40" rx="4" fill="#C98A7A" />
       <path d="M35 196c-14-20 4-34 0-44 14 10 14 26 0 44zM35 196c16-16 30-14 34-30-18 2-30 12-34 30z" fill="#5E9A66" />
+    {:else if room === 'gate'}
+      <defs>
+        <linearGradient id="gsky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#A9D3F5" />
+          <stop offset="1" stop-color="#E6F2FB" />
+        </linearGradient>
+      </defs>
+      <rect width="430" height="236" fill="url(#gsky)" />
+      <rect x="70" y="64" width="290" height="172" fill="#E9E2D3" />
+      <rect x="62" y="56" width="306" height="12" fill="#CFC6B2" />
+      {#each [0, 1, 2, 3, 4] as i}
+        <rect x={92 + i * 54} y="92" width="34" height="38" fill="#BFE0FF" stroke="#8B93A5" stroke-width="3" />
+        <rect x={92 + i * 54} y="146" width="34" height="38" fill="#BFE0FF" stroke="#8B93A5" stroke-width="3" />
+      {/each}
+      <rect x="190" y="192" width="50" height="44" fill="#8B93A5" />
+      <rect y="236" width="430" height="144" fill="#CFC8B8" />
+      <path d="M0 270H430M0 316H430" stroke="#BDB6A6" stroke-width="2" />
+      <path d="M150 236L90 380M280 236L340 380" stroke="#BDB6A6" stroke-width="2" />
+      <rect x="0" y="196" width="430" height="6" fill="#8B93A5" />
+      {#each Array(22) as _, i}
+        <rect x={i * 20 + 6} y="196" width="4" height="40" fill="#8B93A5" />
+      {/each}
+      <rect x="6" y="130" width="42" height="106" fill="#B9C2D1" stroke="#9AA4B5" stroke-width="3" />
+      <rect x="382" y="130" width="42" height="106" fill="#B9C2D1" stroke="#9AA4B5" stroke-width="3" />
+      <circle cx="404" cy="104" r="34" fill="#5E9A66" />
+      <rect x="400" y="130" width="8" height="12" fill="#8E6A3F" />
     {:else if room === 'playground'}
       <defs>
         <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
