@@ -196,16 +196,16 @@
     <div class="blur" class:on={!!choices && step === 'talking'} aria-hidden="true"></div>
     <p class="place">{room.name} · {SLOT_LABEL[scene.slot]}</p>
     <div class="cast">
-      {#if step === 'talking' || step === 'leaving'}
-        <!-- 왼쪽은 나, 오른쪽은 대화 상대(와 끼어든 사람들) -->
-        {#key current?.id}
-          <div class="side mine">
-            <div class="who" class:out={fadingOut} class:front={speaker === 'me'} class:dim={!!speaker && speaker !== 'me'}>
-              <img src={sprite('me')} alt="" draggable="false" />
-              <span class="tag">나</span>
-            </div>
+      <!-- 왼쪽은 나, 오른쪽은 대화 상대(와 끼어든 사람들). 느낀 점을 말할 때는 나만 남는다 -->
+      {#if step !== 'over'}
+        <div class="side mine">
+          <div class="who" class:front={speaker === 'me' || step === 'reflect'} class:dim={!!speaker && speaker !== 'me'}>
+            <img src={sprite('me')} alt="" draggable="false" />
+            <span class="tag">나</span>
           </div>
-        {/key}
+        </div>
+      {/if}
+      {#if step === 'talking' || step === 'leaving'}
         <div class="side theirs">
           {#each figures as f (f.key)}
             <div class="who" class:out={fadingOut} class:front={!!speaker && speaker === f.char} class:dim={speaker === 'me' || (!!speaker && speaker !== f.char)}>
