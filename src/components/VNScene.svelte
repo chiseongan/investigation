@@ -244,7 +244,7 @@
         <button class="btn next" onclick={advance}>다음</button>
       {/if}
     {:else if step === 'reflect' && thoughts.length}
-      <div class="namerow"><p class="eyebrow">{current?.label} · 느낀 점</p></div>
+      <div class="namerow"></div>
       <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
       <div class="textwrap" onclick={nextThought}>
         {#key ti}
@@ -476,9 +476,6 @@
     border-radius: 14px;
     background: #fff8ec;
     animation: pop 0.35s cubic-bezier(0.2, 1.2, 0.4, 1);
-  }
-  .namerow .eyebrow {
-    margin: 0;
   }
   .eyebrow {
     margin: 0 0 6px;
