@@ -46,7 +46,7 @@
 
 <style>
   .intro {
-    --boxh: clamp(300px, 48dvh, 400px);
+    --boxh: clamp(230px, 34dvh, 300px);
     --figh: calc(100dvh - 64px - var(--boxh) - 52px);
     flex: 1;
     min-height: 0;

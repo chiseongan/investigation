@@ -128,7 +128,11 @@
   $effect(() => () => clearTimeout(curtainTimer));
   const CURTAIN_MS = 350;
   function withCurtain(action: () => void) {
-    if (curtain) return; // 이미 전환 중
+    if (curtain) {
+      // 이미 전환 중이면 끝난 뒤에 다시 시도한다 (장면이 막 열린 순간 바로 넘어가야 하는 경우)
+      curtainTimer = setTimeout(() => withCurtain(action), 150);
+      return;
+    }
     if (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches) {
       action();
       return;

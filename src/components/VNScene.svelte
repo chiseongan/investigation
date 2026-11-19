@@ -6,7 +6,7 @@
   import { CHARACTERS } from '../data/characters';
   import { MANIFEST } from '../assets/manifest';
   import { clueById } from '../data/clues';
-  import { DAYS, ROOMS, SCENES, SLOT_LABEL, SLOT_ORDER, type Placed } from '../data/rooms';
+  import { ROOMS, SCENES, SLOT_LABEL, SLOT_ORDER, type Placed } from '../data/rooms';
   import VNBackground from './VNBackground.svelte';
   import { IMPRESSIONS } from '../data/impressions';
   import { dayProgress } from '../lib/daylight';
@@ -29,7 +29,6 @@
   const scene = SCENES[sceneId];
   const room = ROOMS[scene.room];
   const slotIdx = SLOT_ORDER.indexOf(scene.slot);
-  const hasLater = SLOT_ORDER.some((s) => s in DAYS.find((d) => d.id === dayId)!.scenes && SLOT_ORDER.indexOf(s) > slotIdx);
 
   // 만나는 순서는 장면에 적힌 순서. 이미 마친 상대는 건너뛴다.
   const seen = get(game).seen.filter((s) => s.startsWith(sceneId + ':')).map((s) => s.slice(sceneId.length + 1));
@@ -72,7 +71,7 @@
       onBusy(true);
       meet(0);
     } else {
-      step = 'over';
+      finish();
     }
   });
 
@@ -167,10 +166,12 @@
     else finish();
   }
 
+  /** 마지막 대화가 끝나면 시간을 넘기는 선택 없이 자동으로 다음 시간·장소로 넘어간다 */
   function finish() {
     step = 'over';
     current = null;
     onBusy(false);
+    onFinish();
   }
 
   const speakerName = $derived(line?.speaker ? CHARACTERS[line.speaker].name : null);
@@ -192,7 +193,6 @@
   <div class="stage">
     <VNBackground room={room.id} {t} />
     <p class="place">{room.name} · {SLOT_LABEL[scene.slot]}</p>
-    {#if queue.length}<p class="count">만남 {Math.min(idx + 1, queue.length)} / {queue.length}</p>{/if}
     <div class="cast">
       {#if step === 'talking' || step === 'leaving'}
         <!-- 왼쪽은 나, 오른쪽은 대화 상대(와 끼어든 사람들) -->
@@ -227,9 +227,9 @@
     {:else if step === 'leaving'}
       <div class="textwrap"></div>
     {:else if step === 'talking'}
-      <div class="namerow">{#if speakerName}<p class="name">{speakerName}</p>{/if}</div>
+      {#if !choices}<div class="namerow">{#if speakerName}<p class="name">{speakerName}</p>{/if}</div>{/if}
       <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-      <div class="textwrap" onclick={() => !choices && advance()}>
+      <div class="textwrap" class:compact={!!choices} onclick={() => !choices && advance()}>
         {#key line?.text}
           <p class="text" class:narr={!line?.speaker}>{line?.text ?? ''}</p>
         {/key}
@@ -253,15 +253,14 @@
       </div>
       <button class="btn next" onclick={nextThought}>{ti + 1 < thoughts.length ? '다음' : '계속'}</button>
     {:else}
-      <p class="guide">{queue.length ? '이 시간대에 마주칠 사람은 모두 만났어요.' : '이 시간대에는 더 마주칠 사람이 없어요.'}</p>
-      <button class="btn primary" onclick={onFinish}>{hasLater ? '시간이 흐른다 · 계속' : '하루 마무리'}</button>
+      <div class="textwrap"></div>
     {/if}
   </div>
 </section>
 
 <style>
   .vn {
-    --boxh: clamp(300px, 48dvh, 400px);
+    --boxh: clamp(230px, 34dvh, 300px);
     /* 인물 그림이 무대 높이를 넘지 않게: 화면 높이 - 위 표시줄 - 대화창 - 이름표 */
     --figh: calc(100dvh - 64px - var(--boxh) - 52px);
     flex: 1;
@@ -288,18 +287,6 @@
     border-radius: 999px;
     background: rgba(31, 42, 68, 0.78);
     color: #fff;
-    font-size: 13px;
-    font-weight: 700;
-  }
-  .count {
-    position: absolute;
-    top: 10px;
-    right: 12px;
-    margin: 0;
-    padding: 4px 10px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.9);
-    color: #1f2a44;
     font-size: 13px;
     font-weight: 700;
   }
@@ -409,6 +396,9 @@
     overflow-y: auto;
     overscroll-behavior: contain;
   }
+  .textwrap.compact {
+    min-height: 44px;
+  }
   .text {
     margin: 0;
     font-size: 17px;
@@ -432,17 +422,6 @@
       opacity: 0;
       transform: translateY(6px);
     }
-  }
-  .guide {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow-y: auto;
-    overflow-wrap: anywhere;
-    word-break: keep-all;
-    margin: 0;
-    font-size: 15px;
-    line-height: 1.55;
-    color: #2a3550;
   }
   .btn {
     flex: none;
@@ -477,6 +456,9 @@
   }
   .choice {
     flex: none;
+    min-height: 44px;
+    padding: 8px 12px;
+    font-size: 15px;
     overflow-wrap: anywhere;
     word-break: keep-all;
     text-align: left;
