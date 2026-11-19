@@ -133,7 +133,7 @@
     clearTimeout(curtainTimer);
     clearTimeout(captionTimer);
   });
-  const CURTAIN_MS = 350;
+  const CURTAIN_MS = 700;
   // 안내 문구: 검은 화면이 된 뒤 조금 있다가 나타나고, 막이 걷히기 전에 빨리 사라진다
   const CAPTION_IN_MS = 700; // 문구가 나타나기 시작하는 때
   const CAPTION_OUT_MS = 2100; // 문구가 사라지기 시작하는 때
@@ -176,7 +176,7 @@
           requestAnimationFrame(() => {
             curtain = false;
             // 막이 걷히는 동안 글자가 먼저 사라지지 않게 잠시 뒤에 지운다
-            captionTimer = setTimeout(() => (caption = null), 600);
+            captionTimer = setTimeout(() => (caption = null), 800);
             capShow = false;
           }),
         );
@@ -331,7 +331,7 @@
     background: #000;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.5s ease;
+    transition: opacity 0.7s ease;
   }
   .cap {
     position: absolute;
@@ -364,7 +364,7 @@
   .curtain.on {
     opacity: 1;
     pointer-events: auto; /* 전환 중에는 눌러도 반응하지 않게 */
-    transition-duration: 0.35s;
+    transition-duration: 0.5s;
   }
   .bell {
     position: absolute;
