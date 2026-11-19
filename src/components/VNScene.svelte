@@ -8,6 +8,7 @@
   import { clueById } from '../data/clues';
   import { DAYS, ROOMS, SCENES, SLOT_LABEL, SLOT_ORDER, type Placed } from '../data/rooms';
   import VNBackground from './VNBackground.svelte';
+  import { IMPRESSIONS } from '../data/impressions';
   import { dayProgress } from '../lib/daylight';
   import type { Beat, ChoiceView, Effect, InkSession } from '../lib/inkEngine';
   import { sessionFor } from '../lib/session';
@@ -34,7 +35,7 @@
   const seen = get(game).seen.filter((s) => s.startsWith(sceneId + ':')).map((s) => s.slice(sceneId.length + 1));
   const queue: Placed[] = scene.items.filter((i) => i.knot && !seen.includes(i.id));
 
-  type Step = 'talking' | 'leaving' | 'clue' | 'between' | 'over';
+  type Step = 'talking' | 'leaving' | 'clue' | 'reflect' | 'over';
   let step = $state<Step>('over');
   let idx = $state(0);
   let session: InkSession | null = $state(null);
@@ -47,6 +48,9 @@
   let clueCard = $state<Clue | null>(null);
   // 대화가 끝나면 인물이 서서히 사라진 뒤 다음으로 넘어간다
   let fadingOut = $state(false);
+  // 대화가 끝난 뒤 수사관이 느낀 점 (최대 3줄, 한 줄씩)
+  let thoughts = $state<string[]>([]);
+  let ti = $state(0);
   let leaveTimer: ReturnType<typeof setTimeout> | undefined;
   $effect(() => () => clearTimeout(leaveTimer));
   const FADE_MS = 650;
@@ -142,7 +146,24 @@
       return;
     }
     clueCard = null;
-    if (idx + 1 < queue.length) step = 'between';
+    startReflect();
+  }
+
+  function startReflect() {
+    thoughts = current ? (IMPRESSIONS[`${sceneId}:${current.id}`] ?? []).slice(0, 3) : [];
+    ti = 0;
+    if (thoughts.length) step = 'reflect';
+    else proceed();
+  }
+
+  function nextThought() {
+    if (ti + 1 < thoughts.length) ti++;
+    else proceed();
+  }
+
+  function proceed() {
+    thoughts = [];
+    if (idx + 1 < queue.length) meet(idx + 1);
     else finish();
   }
 
@@ -153,7 +174,6 @@
   }
 
   const speakerName = $derived(line?.speaker ? CHARACTERS[line.speaker].name : null);
-  const next = $derived(queue[idx + 1] ?? null);
   /** 무대 위 인물: 지금 대화 상대 + 끼어든 사람들 */
   const figures = $derived(
     current
@@ -223,9 +243,15 @@
       {:else}
         <button class="btn next" onclick={advance}>다음</button>
       {/if}
-    {:else if step === 'between' && next}
-      <p class="guide">잠시 뒤, 다음에 마주친 상대는 <b>{next.label}</b>.</p>
-      <button class="btn primary" onclick={() => meet(idx + 1)}>계속</button>
+    {:else if step === 'reflect' && thoughts.length}
+      <p class="eyebrow">{current?.label} · 느낀 점</p>
+      <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+      <div class="textwrap" onclick={nextThought}>
+        {#key ti}
+          <p class="text thought">{thoughts[ti]}</p>
+        {/key}
+      </div>
+      <button class="btn next" onclick={nextThought}>{ti + 1 < thoughts.length ? '다음' : '계속'}</button>
     {:else}
       <p class="guide">{queue.length ? '이 시간대에 마주칠 사람은 모두 만났어요.' : '이 시간대에는 더 마주칠 사람이 없어요.'}</p>
       <button class="btn primary" onclick={onFinish}>{hasLater ? '시간이 흐른다 · 계속' : '하루 마무리'}</button>
@@ -376,6 +402,10 @@
     color: #1d2438;
     animation: rise 0.22s ease-out;
   }
+  .text.thought {
+    color: #2a3550;
+    font-style: italic;
+  }
   .text.narr {
     color: #4a5670;
     padding-left: 10px;
@@ -435,6 +465,9 @@
     margin: 0 0 6px;
     font-size: 13px;
     font-weight: 700;
+    color: #5b6781;
+  }
+  .eyebrow.clue {
     color: #b8741a;
   }
   .card h3 {
