@@ -34,14 +34,23 @@
   const seen = get(game).seen.filter((s) => s.startsWith(sceneId + ':')).map((s) => s.slice(sceneId.length + 1));
   const queue: Placed[] = scene.items.filter((i) => i.knot && !seen.includes(i.id));
 
-  type Step = 'talking' | 'clue' | 'between' | 'over';
-  let step: Step = $state('over');
+  type Step = 'talking' | 'leaving' | 'clue' | 'between' | 'over';
+  let step = $state<Step>('over');
   let idx = $state(0);
   let session: InkSession | null = $state(null);
   let current = $state<Placed | null>(null);
   let line = $state<{ speaker: CharId | null; text: string } | null>(null);
   let choices = $state<ChoiceView[] | null>(null);
+  // 대화 도중 끼어든 다른 인물들. 퇴장 표시가 붙은 줄이 지나면 사라진다.
+  let guests = $state<CharId[]>([]);
+  let leaving: CharId[] = [];
   let clueCard = $state<Clue | null>(null);
+  // 대화가 끝나면 인물이 서서히 사라진 뒤 다음으로 넘어간다
+  let fadingOut = $state(false);
+  let leaveTimer: ReturnType<typeof setTimeout> | undefined;
+  $effect(() => () => clearTimeout(leaveTimer));
+  const FADE_MS = 650;
+  const reduceMotion = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   let pendingClues: string[] = [];
 
   const sprite = (key: string) => MANIFEST[key]?.sheets.idle.src;
@@ -71,6 +80,9 @@
     pendingClues = [];
     line = null;
     choices = null;
+    guests = [];
+    leaving = [];
+    fadingOut = false;
     session = sessionFor(dayId);
     session.begin(it.knot);
     step = 'talking';
@@ -80,9 +92,19 @@
   function advance() {
     if (!session) return;
     const beat: Beat = session.step();
+    // 지난 줄에서 "퇴장"이 표시된 인물은 이제 자리를 뜬다
+    if (leaving.length) {
+      guests = guests.filter((g) => !leaving.includes(g));
+      leaving = [];
+    }
     if (beat.type === 'end') return endEncounter();
     if (beat.type === 'line') {
       apply(beat.effects);
+      const here = (id: CharId) => id !== 'me' && id !== current?.char;
+      const g = [...guests];
+      for (const id of [...(beat.enter ?? []), ...(beat.speaker ? [beat.speaker] : [])]) if (here(id) && !g.includes(id)) g.push(id);
+      guests = g.slice(-2);
+      leaving = beat.leave ?? [];
       line = { speaker: beat.speaker, text: beat.text };
       choices = null;
     } else if (beat.type === 'choices') {
@@ -105,7 +127,11 @@
     session = null;
     line = null;
     choices = null;
-    nextClueOrOn();
+    leaving = [];
+    // 인물이 사라지는 동안 잠시 기다린다 (움직임 줄이기 설정이면 바로 넘어간다)
+    fadingOut = true;
+    step = 'leaving';
+    leaveTimer = setTimeout(nextClueOrOn, reduceMotion() ? 0 : FADE_MS);
   }
 
   function nextClueOrOn() {
@@ -128,6 +154,16 @@
 
   const speakerName = $derived(line?.speaker ? CHARACTERS[line.speaker].name : null);
   const next = $derived(queue[idx + 1] ?? null);
+  /** 무대 위 인물: 지금 대화 상대 + 끼어든 사람들 */
+  const figures = $derived(
+    current
+      ? [
+          { key: current.id, sprite: current.sprite, label: current.label, char: current.char ?? null },
+          ...guests.map((id) => ({ key: 'g_' + id, sprite: CHARACTERS[id].sprite, label: CHARACTERS[id].name, char: id as CharId | null })),
+        ]
+      : [],
+  );
+  const speaker = $derived(step === 'talking' ? (line?.speaker ?? null) : null);
   /** 하루 안의 시각: 시간대 순서 + 그 안에서 몇 번째 만남인지. 만날 때마다 빛깔이 조금씩 바뀐다. */
   const t = $derived(dayProgress(slotIdx, SLOT_ORDER.length, step === 'over' ? 1 : idx / Math.max(1, queue.length)));
 </script>
@@ -138,13 +174,24 @@
     <p class="place">{room.name} · {SLOT_LABEL[scene.slot]}</p>
     {#if queue.length}<p class="count">만남 {Math.min(idx + 1, queue.length)} / {queue.length}</p>{/if}
     <div class="cast">
-      {#if current && step !== 'over'}
-        {#key current.id}
-          <div class="who" class:front={!!line?.speaker && line.speaker === current.char}>
-            <img src={sprite(current.sprite)} alt="" draggable="false" />
-            <span class="tag">{current.label}</span>
+      {#if step === 'talking' || step === 'leaving'}
+        <!-- 왼쪽은 나, 오른쪽은 대화 상대(와 끼어든 사람들) -->
+        {#key current?.id}
+          <div class="side mine">
+            <div class="who" class:out={fadingOut} class:front={speaker === 'me'} class:dim={!!speaker && speaker !== 'me'}>
+              <img src={sprite('me')} alt="" draggable="false" />
+              <span class="tag">나</span>
+            </div>
           </div>
         {/key}
+        <div class="side theirs">
+          {#each figures as f (f.key)}
+            <div class="who" class:out={fadingOut} class:front={!!speaker && speaker === f.char} class:dim={speaker === 'me' || (!!speaker && speaker !== f.char)}>
+              <img src={sprite(f.sprite)} alt="" draggable="false" />
+              <span class="tag">{f.label}</span>
+            </div>
+          {/each}
+        </div>
       {/if}
     </div>
   </div>
@@ -157,6 +204,8 @@
         <p class="desc">{clueCard.desc}</p>
       </div>
       <button class="btn primary" onclick={nextClueOrOn}>수사 수첩에 기록됨 · 계속</button>
+    {:else if step === 'leaving'}
+      <div class="textwrap"></div>
     {:else if step === 'talking'}
       {#if speakerName}<p class="name">{speakerName}</p>{/if}
       <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
@@ -228,26 +277,55 @@
   .cast {
     position: relative;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: flex-end;
     min-height: 220px;
-    padding: 0 8px 14px;
+    gap: 8px;
+    padding: 0 12px 14px;
+  }
+  .side {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    min-width: 0;
+  }
+  .mine {
+    flex: 0 1 140px;
+  }
+  .theirs {
+    flex: 1 1 0;
+    justify-content: flex-end;
   }
   .who {
-    width: 150px;
+    flex: 0 1 140px;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
-    transition: transform 0.2s;
-    animation: enter 0.35s ease-out;
+    transition:
+      transform 0.2s,
+      opacity 0.2s;
+    /* 대화가 시작될 때 서서히 나타난다 (투명도만 사용) */
+    animation: appear 0.65s ease-out;
+  }
+  .who.dim {
+    opacity: 0.55;
   }
   .who.front {
     transform: translateY(-8px);
   }
-  @keyframes enter {
+  /* 대화가 끝날 때 서서히 사라진다 */
+  .who.out {
+    animation: vanish 0.65s ease-in forwards;
+  }
+  @keyframes appear {
     from {
       opacity: 0;
-      transform: translateX(40px);
+    }
+  }
+  @keyframes vanish {
+    to {
+      opacity: 0;
     }
   }
   .who img {
