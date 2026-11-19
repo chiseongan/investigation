@@ -6,7 +6,9 @@
   import { CHARACTERS } from '../data/characters';
   import { MANIFEST } from '../assets/manifest';
   import { clueById } from '../data/clues';
-  import { ROOMS, SCENES, SLOT_LABEL, type Placed } from '../data/rooms';
+  import { DAYS, ROOMS, SCENES, SLOT_LABEL, SLOT_ORDER, type Placed } from '../data/rooms';
+  import VNBackground from './VNBackground.svelte';
+  import { dayProgress } from '../lib/daylight';
   import type { Beat, ChoiceView, Effect, InkSession } from '../lib/inkEngine';
   import { sessionFor } from '../lib/session';
   import { addClue, addTrust, game, markSeen, markShared } from '../lib/gameState';
@@ -25,8 +27,8 @@
   // svelte-ignore state_referenced_locally
   const scene = SCENES[sceneId];
   const room = ROOMS[scene.room];
-  const wallColor = room.wall?.right ?? '#DDE5EF';
-  const floorColor = room.floor?.[0] ?? '#D9C9A6';
+  const slotIdx = SLOT_ORDER.indexOf(scene.slot);
+  const hasLater = SLOT_ORDER.some((s) => s in DAYS.find((d) => d.id === dayId)!.scenes && SLOT_ORDER.indexOf(s) > slotIdx);
 
   // 만나는 순서는 장면에 적힌 순서. 이미 마친 상대는 건너뛴다.
   const seen = get(game).seen.filter((s) => s.startsWith(sceneId + ':')).map((s) => s.slice(sceneId.length + 1));
@@ -126,12 +128,15 @@
 
   const speakerName = $derived(line?.speaker ? CHARACTERS[line.speaker].name : null);
   const next = $derived(queue[idx + 1] ?? null);
+  /** 하루 안의 시각: 시간대 순서 + 그 안에서 몇 번째 만남인지. 만날 때마다 빛깔이 조금씩 바뀐다. */
+  const t = $derived(dayProgress(slotIdx, SLOT_ORDER.length, step === 'over' ? 1 : idx / Math.max(1, queue.length)));
 </script>
 
-<section class="vn" style="--wall: {wallColor}; --floor: {floorColor}">
+<section class="vn">
   <div class="stage">
+    <VNBackground room={room.id} {t} />
     <p class="place">{room.name} · {SLOT_LABEL[scene.slot]}</p>
-    {#if queue.length}<p class="count">만남 {Math.min(idx + (step === 'over' ? 1 : 1), queue.length)} / {queue.length}</p>{/if}
+    {#if queue.length}<p class="count">만남 {Math.min(idx + 1, queue.length)} / {queue.length}</p>{/if}
     <div class="cast">
       {#if current && step !== 'over'}
         {#key current.id}
@@ -170,11 +175,11 @@
         <button class="btn next" onclick={advance}>다음</button>
       {/if}
     {:else if step === 'between' && next}
-      <p class="guide">시간이 흘러 {SLOT_LABEL[scene.slot]} 시간이 이어집니다. 다음에 마주친 상대는 <b>{next.label}</b>.</p>
+      <p class="guide">잠시 뒤, 다음에 마주친 상대는 <b>{next.label}</b>.</p>
       <button class="btn primary" onclick={() => meet(idx + 1)}>계속</button>
     {:else}
       <p class="guide">{queue.length ? '이 시간대에 마주칠 사람은 모두 만났어요.' : '이 시간대에는 더 마주칠 사람이 없어요.'}</p>
-      <button class="btn primary" onclick={onFinish}>다음 시간으로</button>
+      <button class="btn primary" onclick={onFinish}>{hasLater ? '시간이 흐른다 · 계속' : '하루 마무리'}</button>
     {/if}
   </div>
 </section>
@@ -193,8 +198,7 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-    /* 위는 벽, 아래는 바닥 */
-    background: linear-gradient(to bottom, var(--wall) 0 62%, var(--floor) 62% 100%);
+    background: #dde5ef;
     overflow: hidden;
   }
   .place {
@@ -222,6 +226,7 @@
     font-weight: 700;
   }
   .cast {
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: flex-end;

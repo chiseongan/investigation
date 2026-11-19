@@ -10,7 +10,8 @@
   import DayEnd from './components/DayEnd.svelte';
   import Notebook from './components/Notebook.svelte';
   import { DAY_SECONDS } from './data/config';
-  import { DAYS, ROOMS, SCENES, SLOT_LABEL } from './data/rooms';
+  import { DAYS, ROOMS, SCENES, SLOT_LABEL, availableSlots } from './data/rooms';
+  import { get } from 'svelte/store';
   import { DayClock } from './lib/clock';
   import VNScene from './components/VNScene.svelte';
   import { enterScene, endDay, game, leaveScene, newGame, nextDay, openReport, rewindTo, setMode, startDay, submitReport } from './lib/gameState';
@@ -37,6 +38,7 @@
         bell = true;
       });
     }
+    autoEnter();
   }
 
   function discardSave() {
@@ -61,6 +63,17 @@
   );
   const hasNext = $derived(!!DAYS[$game.dayIndex + 1] && Object.keys(DAYS[$game.dayIndex + 1].scenes).length > 0);
 
+  /** 대화형: 시간대를 고르지 않고 이른 시간부터 자동으로 다음 장면에 들어간다. */
+  function autoEnter() {
+    const g = get(game);
+    if (g.mode !== 'novel' || g.phase !== 'slot') return;
+    const d = DAYS[g.dayIndex];
+    const slot = availableSlots(d, g.slotsUsed)[0];
+    if (!slot) return;
+    sceneKey++;
+    enterScene(slot, d.scenes[slot]!);
+  }
+
   function beginDay(first: boolean) {
     clock?.stop();
     bell = false;
@@ -70,6 +83,7 @@
     clock = new DayClock(DAY_SECONDS, () => {
       bell = true;
     });
+    autoEnter();
   }
 
   /** 되감기: 고른 요일 아침으로. 그 전 요일에 모은 단서는 남는다. */
@@ -83,6 +97,7 @@
     clock = new DayClock(DAY_SECONDS, () => {
       bell = true;
     });
+    autoEnter();
   }
 
   function restart() {
@@ -113,6 +128,7 @@
     busy = false;
     leaveScene();
     if ($game.phase === 'dayEnd') clock?.stop();
+    autoEnter();
   }
 
   // 단서 수가 바뀔 때 HUD 숫자 튀는 연출 트리거
