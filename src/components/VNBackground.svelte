@@ -9,9 +9,10 @@
   import gym from '../assets/backgrounds/gym.webp';
   import counseling from '../assets/backgrounds/counseling.webp';
   import gate from '../assets/backgrounds/gate.webp';
+  import playground from '../assets/backgrounds/playground.webp';
 
-  // 그림 파일이 있는 장소는 그림을, 아직 없는 장소(운동장)는 아래 SVG 임시 그림을 쓴다
-  const PICTURES: Record<string, string> = { classroom, hallway, cafeteria, gym, counseling, gate };
+  // 그림 파일이 있는 장소는 그림을 쓴다. 그림이 없는 장소가 생기면 아래 SVG 임시 그림이 대신한다.
+  const PICTURES: Record<string, string> = { classroom, hallway, cafeteria, gym, counseling, gate, playground };
 
   let { room, t }: { room: string; t: number } = $props();
 
