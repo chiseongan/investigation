@@ -97,15 +97,18 @@
   .who.front {
     transform: translateY(-8px);
   }
-  /* 인물 그림이 있는 인물: 상반신만 크게 보이도록 확대하고, 아래쪽은 대화창 뒤로 내려 숨긴다 */
+  /* 인물 그림이 있는 인물: 상반신 위주로 보여 주고, 아래쪽은 대화창 뒤로 내려 숨긴다.
+     그림은 인물 전체 높이의 약 2/3만 담겨 있다. 무대 높이만큼의 전신을 기준으로 크기를 잡는다. */
   .who.bust {
     flex: 0 0 auto;
-    --bw: min(200px, calc((100dvh - 64px - var(--boxh) - 36px) / 0.62 * var(--ar)));
-    /* 그림 높이의 아래 38%는 무대 밖으로 내려 가린다. 무대 아래쪽 여백(14px)만큼도 더 내린다 */
-    margin-bottom: calc(var(--bw) / var(--ar) * -0.38 - 14px);
+    --fh: calc(100dvh - 64px - var(--boxh));
+    --ih: calc(var(--fh) * 0.667);
+    /* 그림 아래 7%는 무대 밖으로 내려 가린다. 무대 아래쪽 여백(14px)만큼도 더 내린다 */
+    margin-bottom: calc(var(--ih) * -0.07 - 14px);
   }
   .who.bust img {
-    width: var(--bw);
+    width: auto;
+    height: var(--ih);
     max-width: none;
   }
   .who img {

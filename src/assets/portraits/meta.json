@@ -1,0 +1,74 @@
+{
+  "me": {
+    "ratio": 0.4632,
+    "faces": [
+      "default",
+      "smile",
+      "surprised",
+      "thinking"
+    ]
+  },
+  "jiwoo": {
+    "ratio": 0.4283,
+    "faces": [
+      "default",
+      "smile",
+      "surprised",
+      "sad"
+    ]
+  },
+  "minjun": {
+    "ratio": 0.7868,
+    "faces": [
+      "default",
+      "playful",
+      "shrug",
+      "cold"
+    ]
+  },
+  "seoyeon": {
+    "ratio": 0.4044,
+    "faces": [
+      "default",
+      "glance",
+      "away",
+      "resolved"
+    ]
+  },
+  "doyun": {
+    "ratio": 0.4301,
+    "faces": [
+      "default",
+      "lipbite",
+      "stiff",
+      "relieved"
+    ]
+  },
+  "daeun": {
+    "ratio": 0.7022,
+    "faces": [
+      "default",
+      "laugh",
+      "glare",
+      "bored"
+    ]
+  },
+  "taeo": {
+    "ratio": 0.7629,
+    "faces": [
+      "default",
+      "surrender",
+      "playful",
+      "surprised"
+    ]
+  },
+  "teacher": {
+    "ratio": 0.421,
+    "faces": [
+      "default",
+      "worried",
+      "serious",
+      "relieved"
+    ]
+  }
+}

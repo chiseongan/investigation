@@ -67,7 +67,7 @@
 
   const sprite = (key: string) => MANIFEST[key]?.sheets.idle.src;
   /** 인물 그림이 들어온 인물은 그 그림(표정 포함)을, 아니면 임시 그림을 쓴다 */
-  const art = (key: string, face: Face = 'default') => portrait(key, face) ?? { src: sprite(key) ?? '', ratio: null };
+  const art = (key: string, face: Face = 'default'): { src: string; ratio: number | null } => portrait(key, face) ?? { src: sprite(key) ?? '', ratio: null };
   // 나의 표정: 느낀 점을 말할 땐 생각하는 얼굴, 단서를 얻으면 놀란 얼굴
   const myFace = $derived<Face>(step === 'reflect' ? 'thinking' : step === 'clue' ? 'surprised' : 'default');
 
@@ -231,9 +231,9 @@
       {#if step === 'talking' || step === 'leaving'}
         <div class="side theirs">
           {#each figures as f (f.key)}
-            <div class="who" class:out={fadingOut} class:front={!!speaker && speaker === f.char} class:dim={speaker === 'me' || (!!speaker && speaker !== f.char)}>
-              <img src={sprite(f.sprite)} alt="" draggable="false" />
-              <span class="tag">{f.label}</span>
+            <div class="who" class:bust={!!art(f.sprite).ratio} style:--ar={art(f.sprite).ratio} class:out={fadingOut} class:front={!!speaker && speaker === f.char} class:dim={speaker === 'me' || (!!speaker && speaker !== f.char)}>
+              <img src={art(f.sprite).src} alt="" draggable="false" />
+              {#if !art(f.sprite).ratio}<span class="tag">{f.label}</span>{/if}
             </div>
           {/each}
         </div>
@@ -351,6 +351,10 @@
     /* 대화가 시작될 때 서서히 나타난다 (투명도만 사용) */
     animation: appear 0.65s ease-out;
   }
+  /* 끼어든 사람은 앞사람과 조금 겹쳐 서서 좁은 화면에 다 들어가게 한다 */
+  .theirs .who.bust + .who.bust {
+    margin-left: calc(var(--ih) * var(--ar) * -0.3);
+  }
   .who.dim {
     opacity: 0.55;
   }
@@ -371,15 +375,18 @@
       opacity: 0;
     }
   }
-  /* 인물 그림이 있는 인물: 상반신만 크게 보이도록 확대하고, 아래쪽은 대화창 뒤로 내려 숨긴다 */
+  /* 인물 그림이 있는 인물: 상반신 위주로 보여 주고, 아래쪽은 대화창 뒤로 내려 숨긴다.
+     그림은 인물 전체 높이의 약 2/3만 담겨 있다. 무대 높이만큼의 전신을 기준으로 크기를 잡는다. */
   .who.bust {
     flex: 0 0 auto;
-    --bw: min(200px, calc((100dvh - 64px - var(--boxh) - 36px) / 0.62 * var(--ar)));
-    /* 그림 높이의 아래 38%는 무대 밖으로 내려 가린다. 무대 아래쪽 여백(14px)만큼도 더 내린다 */
-    margin-bottom: calc(var(--bw) / var(--ar) * -0.38 - 14px);
+    --fh: calc(100dvh - 64px - var(--boxh));
+    --ih: calc(var(--fh) * 0.667);
+    /* 그림 아래 7%는 무대 밖으로 내려 가린다. 무대 아래쪽 여백(14px)만큼도 더 내린다 */
+    margin-bottom: calc(var(--ih) * -0.07 - 14px);
   }
   .who.bust img {
-    width: var(--bw);
+    width: auto;
+    height: var(--ih);
     max-width: none;
   }
   .who img {
