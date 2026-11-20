@@ -222,9 +222,9 @@
       <!-- 왼쪽은 나, 오른쪽은 대화 상대(와 끼어든 사람들). 느낀 점을 말할 때는 나만 남는다 -->
       {#if step !== 'over'}
         <div class="side mine">
-          <div class="who" class:front={speaker === 'me' || step === 'reflect'} class:dim={!!speaker && speaker !== 'me'}>
-            <img src={art('me', myFace).src} style:--ar={art('me', myFace).ratio} alt="" draggable="false" />
-            <span class="tag">나</span>
+          <div class="who" class:bust={!!art('me').ratio} style:--ar={art('me').ratio} class:front={speaker === 'me' || step === 'reflect'} class:dim={!!speaker && speaker !== 'me'}>
+            <img src={art('me', myFace).src} alt="" draggable="false" />
+            {#if !art('me').ratio}<span class="tag">나</span>{/if}
           </div>
         </div>
       {/if}
@@ -333,7 +333,7 @@
     min-width: 0;
   }
   .mine {
-    flex: 0 1 140px;
+    flex: 0 0 auto;
   }
   .theirs {
     flex: 1 1 0;
@@ -370,6 +370,17 @@
     to {
       opacity: 0;
     }
+  }
+  /* 인물 그림이 있는 인물: 상반신만 크게 보이도록 확대하고, 아래쪽은 대화창 뒤로 내려 숨긴다 */
+  .who.bust {
+    flex: 0 0 auto;
+    --bw: min(200px, calc((100dvh - 64px - var(--boxh) - 36px) / 0.62 * var(--ar)));
+    /* 그림 높이의 아래 38%는 무대 밖으로 내려 가린다. 무대 아래쪽 여백(14px)만큼도 더 내린다 */
+    margin-bottom: calc(var(--bw) / var(--ar) * -0.38 - 14px);
+  }
+  .who.bust img {
+    width: var(--bw);
+    max-width: none;
   }
   .who img {
     width: 100%;
