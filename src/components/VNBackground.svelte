@@ -3,6 +3,15 @@
   // 빛깔은 새 덮개를 위에 올려 투명도로 서서히 드러낸다 (움직이는 속성은 opacity 뿐).
   import { untrack } from 'svelte';
   import { daylight } from '../lib/daylight';
+  import classroom from '../assets/backgrounds/classroom.webp';
+  import hallway from '../assets/backgrounds/hallway.webp';
+  import cafeteria from '../assets/backgrounds/cafeteria.webp';
+  import gym from '../assets/backgrounds/gym.webp';
+  import counseling from '../assets/backgrounds/counseling.webp';
+  import gate from '../assets/backgrounds/gate.webp';
+
+  // 그림 파일이 있는 장소는 그림을, 아직 없는 장소(운동장)는 아래 SVG 임시 그림을 쓴다
+  const PICTURES: Record<string, string> = { classroom, hallway, cafeteria, gym, counseling, gate };
 
   let { room, t }: { room: string; t: number } = $props();
 
@@ -18,6 +27,9 @@
 </script>
 
 <div class="bg" aria-hidden="true">
+  {#if PICTURES[room]}
+    <img class="pic" src={PICTURES[room]} alt="" draggable="false" />
+  {:else}
   <svg viewBox="0 0 430 380" preserveAspectRatio="xMidYMax slice">
     {#if room === 'classroom'}
       <rect width="430" height="236" fill="#E4EAF2" />
@@ -143,6 +155,7 @@
       <circle cx="70" cy="190" r="26" fill="#5E9A66" />
     {/if}
   </svg>
+  {/if}
   {#each layers as l (l.id)}
     <div class="tint" style="background: {l.color}"></div>
   {/each}
@@ -153,6 +166,17 @@
     position: absolute;
     inset: 0;
     overflow: hidden;
+  }
+  /* 아래쪽을 기준으로 맞추고 위쪽이 잘린다: 인물이 서는 바닥이 늘 보인다 */
+  .pic {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center bottom;
+    display: block;
+    pointer-events: none;
   }
   svg {
     position: absolute;
