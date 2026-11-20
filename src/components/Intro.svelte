@@ -2,6 +2,7 @@
   // 시작 인트로: 교문 앞. 왼쪽에 나, 한 줄씩 넘기며 전학생 연기를 연습하고 들어간다.
   import { INTRO } from '../data/intro';
   import { MANIFEST } from '../assets/manifest';
+  import { portrait } from '../assets/portraits';
   import VNBackground from './VNBackground.svelte';
 
   let { onDone }: { onDone: () => void } = $props();
@@ -9,7 +10,9 @@
   let i = $state(0);
   const line = $derived(INTRO[i]);
   const last = $derived(i + 1 >= INTRO.length);
-  const me = MANIFEST.me.sheets.idle.src;
+  // 인물 그림이 있으면 그 그림. 전학생 연기를 하는 대사에서는 웃는 얼굴을 쓴다
+  const fallback = MANIFEST.me.sheets.idle.src;
+  const art = $derived(portrait('me', line.who === 'me' ? 'smile' : 'default') ?? { src: fallback, ratio: null });
 
   function next() {
     if (last) onDone();
@@ -23,7 +26,7 @@
     <p class="place">교문 앞 · 월요일 아침</p>
     <div class="cast">
       <div class="who" class:front={line.who === 'me'}>
-        <img src={me} alt="" draggable="false" />
+        <img src={art.src} style:--ar={art.ratio} alt="" draggable="false" />
         <span class="tag">나</span>
       </div>
     </div>
@@ -96,7 +99,7 @@
   }
   .who img {
     width: 100%;
-    max-width: calc(var(--figh) * 0.5714);
+    max-width: calc((var(--figh) - 36px) * var(--ar, 0.5714));
     height: auto;
     display: block;
     pointer-events: none;

@@ -5,6 +5,7 @@
   import { onMount } from 'svelte';
   import { CHARACTERS } from '../data/characters';
   import { MANIFEST } from '../assets/manifest';
+  import { portrait, type Face } from '../assets/portraits';
   import { clueById } from '../data/clues';
   import { ROOMS, SCENES, SLOT_LABEL, SLOT_ORDER, type Placed } from '../data/rooms';
   import VNBackground from './VNBackground.svelte';
@@ -65,6 +66,10 @@
   let pendingClues: string[] = [];
 
   const sprite = (key: string) => MANIFEST[key]?.sheets.idle.src;
+  /** 인물 그림이 들어온 인물은 그 그림(표정 포함)을, 아니면 임시 그림을 쓴다 */
+  const art = (key: string, face: Face = 'default') => portrait(key, face) ?? { src: sprite(key) ?? '', ratio: null };
+  // 나의 표정: 느낀 점을 말할 땐 생각하는 얼굴, 단서를 얻으면 놀란 얼굴
+  const myFace = $derived<Face>(step === 'reflect' ? 'thinking' : step === 'clue' ? 'surprised' : 'default');
 
   function apply(effects: Effect[]) {
     for (const e of effects) {
@@ -218,7 +223,7 @@
       {#if step !== 'over'}
         <div class="side mine">
           <div class="who" class:front={speaker === 'me' || step === 'reflect'} class:dim={!!speaker && speaker !== 'me'}>
-            <img src={sprite('me')} alt="" draggable="false" />
+            <img src={art('me', myFace).src} style:--ar={art('me', myFace).ratio} alt="" draggable="false" />
             <span class="tag">나</span>
           </div>
         </div>
@@ -368,7 +373,8 @@
   }
   .who img {
     width: 100%;
-    max-width: calc(var(--figh) * 0.5714);
+    /* 위쪽 장소 표시줄 자리를 비우고, 그림 비율(--ar, 기본 임시 그림 비율)에 맞춘다 */
+    max-width: calc((var(--figh) - 36px) * var(--ar, 0.5714));
     height: auto;
     display: block;
     pointer-events: none;
