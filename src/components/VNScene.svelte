@@ -116,7 +116,7 @@
     if (beat.type === 'end') return endEncounter();
     if (beat.type === 'line') {
       apply(beat.effects);
-      const here = (id: CharId) => id !== 'me' && id !== current?.char;
+      const here = (id: CharId) => id !== 'me' && id !== current?.char && !current?.cast?.includes(id);
       const g = [...guests];
       for (const id of [...(beat.enter ?? []), ...(beat.speaker ? [beat.speaker] : [])]) if (here(id) && !g.includes(id)) g.push(id);
       guests = g.slice(-2);
@@ -202,7 +202,10 @@
   const figures = $derived(
     current
       ? [
-          { key: current.id, sprite: current.sprite, label: current.label, char: current.char ?? null },
+          // 목격 장면은 대화 상대 대신 지켜보는 인물들이 서 있다
+          ...(current.cast
+            ? current.cast.map((id) => ({ key: 'c_' + id, sprite: CHARACTERS[id].sprite, label: CHARACTERS[id].name, char: id as CharId | null }))
+            : [{ key: current.id, sprite: current.sprite, label: current.label, char: current.char ?? null }]),
           ...guests.map((id) => ({ key: 'g_' + id, sprite: CHARACTERS[id].sprite, label: CHARACTERS[id].name, char: id as CharId | null })),
         ]
       : [],

@@ -23,6 +23,8 @@ export interface Placed {
   /** ink knot 이름. 없으면 상호작용 불가 */
   knot?: string;
   char?: CharId;
+  /** 목격 장면: 말을 걸지 않고 지켜보는 인물들 (대화형 무대에 이 인물들이 서 있다) */
+  cast?: CharId[];
 }
 
 export interface WallItem {
@@ -58,6 +60,8 @@ export interface SceneDef {
 
 const prop = (id: string, sprite: string, c: number, r: number, label: string): Placed => ({ id, sprite, c, r, label, kind: 'prop' });
 const npc = (sprite: CharId, c: number, r: number, label: string, knot: string, id = sprite): Placed => ({ id, sprite, char: sprite, c, r, label, kind: 'npc', knot });
+/** 지나가며 목격하는 장면: 대화 상대 없이 일어나는 일을 본다 */
+const watch = (id: string, c: number, r: number, label: string, knot: string, cast: CharId[]): Placed => ({ id, sprite: 'table', c, r, label, kind: 'object', knot, cast });
 const kid = (id: string, sprite: 'kid1' | 'kid2', c: number, r: number): Placed => prop(id, sprite, c, r, '친구');
 
 export const ROOMS: Record<string, RoomDef> = {
@@ -166,6 +170,7 @@ export const SCENES: Record<string, SceneDef> = {
       npc('jiwoo', 2, 4, '지우', 'arrive_jiwoo'),
       npc('taeo', 5, 4, '태오', 'arrive_taeo'),
       npc('minjun', 6, 4, '민준', 'arrive_minjun'),
+      watch('door', 9, 5, '교실 문 앞', 'arrive_watch_door', ['daeun', 'seoyeon']),
       npc('teacher', 6, 1, '담임 선생님', 'arrive_teacher'),
     ],
   },
@@ -176,6 +181,7 @@ export const SCENES: Record<string, SceneDef> = {
       npc('seoyeon', 3, 8, '서연', 'break_seoyeon'),
       npc('daeun', 7, 4, '다은', 'break_daeun'),
       npc('minjun', 8, 4, '민준', 'break_minjun'),
+      npc('taeo', 5, 2, '태오', 'break_taeo_daily'),
     ],
   },
   mon_lunch: {
@@ -184,7 +190,9 @@ export const SCENES: Record<string, SceneDef> = {
       { id: 'corner', sprite: 'table', c: 0, r: 8, label: '구석 자리', kind: 'object', knot: 'lunch_corner' },
       npc('jiwoo', 1, 8, '지우', 'lunch_jiwoo'),
       npc('seoyeon', 5, 8, '서연', 'lunch_seoyeon'),
+      npc('daeun', 3, 2, '다은', 'lunch_daeun_daily'),
       npc('minjun', 7, 4, '민준', 'lunch_minjun'),
+      watch('tray', 9, 7, '식판 반납대', 'lunch_watch_tray', ['seoyeon', 'jiwoo']),
     ],
   },
   // ---------- 화 ----------
@@ -194,6 +202,7 @@ export const SCENES: Record<string, SceneDef> = {
       npc('taeo', 3, 3, '태오', 'tue_arrive_taeo'),
       npc('daeun', 4, 3, '다은', 'tue_arrive_daeun'),
       npc('doyun', 2, 5, '도윤', 'tue_arrive_doyun'),
+      npc('teacher', 1, 3, '담임 선생님', 'tue_arrive_teacher'),
       kid('kid_a', 'kid1', 4, 6),
     ],
   },
@@ -205,6 +214,7 @@ export const SCENES: Record<string, SceneDef> = {
       npc('seoyeon', 3, 8, '서연', 'tue_break_seoyeon'),
       kid('kid_a', 'kid1', 8, 4),
       kid('kid_b', 'kid2', 7, 5),
+      watch('win', 9, 3, '창가', 'tue_break_watch_window', ['doyun']),
     ],
   },
   tue_lunch: {
@@ -213,6 +223,7 @@ export const SCENES: Record<string, SceneDef> = {
       npc('jiwoo', 1, 5, '지우', 'tue_lunch_jiwoo'),
       npc('doyun', 4, 4, '도윤', 'tue_lunch_doyun'),
       npc('minjun', 4, 2, '민준', 'tue_lunch_minjun'),
+      npc('taeo', 1, 2, '태오', 'tue_lunch_taeo_daily'),
       kid('kid_a', 'kid1', 7, 2),
       kid('kid_b', 'kid2', 7, 3),
     ],
@@ -223,6 +234,7 @@ export const SCENES: Record<string, SceneDef> = {
       { id: 'bag', sprite: 'table', c: 0, r: 6, label: '체육복 가방', kind: 'object', knot: 'tue_pe_bag' },
       npc('jiwoo', 1, 5, '지우', 'tue_pe_jiwoo'),
       npc('seoyeon', 6, 3, '서연', 'tue_pe_seoyeon'),
+      watch('ball', 8, 2, '공 주고받는 둘', 'tue_pe_watch_ball', ['minjun', 'taeo']),
       kid('kid_a', 'kid1', 7, 7),
       kid('kid_b', 'kid2', 8, 6),
     ],
@@ -233,6 +245,7 @@ export const SCENES: Record<string, SceneDef> = {
     items: [
       npc('seoyeon', 3, 4, '서연', 'wed_break_seoyeon'),
       npc('doyun', 5, 2, '도윤', 'wed_break_doyun'),
+      npc('taeo', 1, 3, '태오', 'wed_break_taeo_daily'),
       kid('kid_a', 'kid2', 2, 2),
     ],
   },
@@ -242,6 +255,7 @@ export const SCENES: Record<string, SceneDef> = {
       npc('doyun', 4, 4, '도윤', 'wed_lunch_doyun'),
       npc('seoyeon', 4, 6, '서연', 'wed_lunch_seoyeon'),
       npc('minjun', 4, 2, '민준', 'wed_lunch_minjun'),
+      watch('phone', 1, 2, '급식 줄', 'wed_lunch_watch_phone', ['daeun']),
       kid('kid_a', 'kid1', 7, 2),
     ],
   },
@@ -252,11 +266,13 @@ export const SCENES: Record<string, SceneDef> = {
     items: [
       npc('seoyeon', 3, 4, '서연', 'thu_break_seoyeon'),
       npc('teacher', 5, 3, '담임 선생님', 'thu_break_teacher'),
+      watch('alone', 1, 3, '복도 창가', 'thu_break_watch_alone', ['minjun']),
     ],
   },
   thu_lunch: {
     id: 'thu_lunch', room: 'cafeteria', slot: 'lunch', start: { c: 7, r: 7 },
     items: [
+      npc('daeun', 1, 2, '다은', 'thu_lunch_daeun_daily'),
       npc('doyun', 4, 4, '도윤', 'thu_lunch_doyun'),
       npc('seoyeon', 4, 6, '서연', 'thu_lunch_seoyeon'),
     ],
@@ -271,6 +287,7 @@ export const SCENES: Record<string, SceneDef> = {
     items: [
       npc('teacher', 5, 3, '담임 선생님', 'fri_teacher'),
       npc('seoyeon', 3, 4, '서연', 'fri_seoyeon'),
+      watch('locker', 1, 3, '사물함 앞', 'fri_arrive_watch_locker', ['doyun', 'jiwoo']),
     ],
   },
   fri_break: {
@@ -278,6 +295,7 @@ export const SCENES: Record<string, SceneDef> = {
     items: [
       npc('minjun', 8, 4, '민준', 'fri_minjun'),
       npc('jiwoo', 1, 6, '지우', 'fri_jiwoo'),
+      npc('taeo', 5, 2, '태오', 'fri_break_taeo_daily'),
     ],
   },
 };
