@@ -6,7 +6,7 @@ EXTERNAL trust(who)
 === thu_break_teacher ===
 { thu_break_teacher > 1:
     지우를 잘 부탁해요. #말:담임 #표정:encourage
-    -> menu
+    -> DONE
 }
 목요일 아침, 선생님이 복도에서 학생들에게 인사를 건네고 계신다. 평소보다 목소리가 조금 낮다.
 안녕하세요, 선생님. #말:나 #표정:smile
@@ -27,8 +27,8 @@ EXTERNAL trust(who)
         알려 줘서 고마워요. 지금부터라도 화면을 남겨 두도록 해요. #말:담임 #표정:firm
     }
     사진은 더 전달하지 않고, 학교 담당 교사와 함께 지우를 먼저 살필게요. 학교폭력 신고센터 117에서도 상담할 수 있어요. #말:담임 #표정:firm
-    -> menu
-+ [인사하고 물러난다]
+    -> DONE
+* [인사하고 물러난다]
     -> DONE
 
 === thu_break_seoyeon ===

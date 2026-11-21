@@ -78,21 +78,21 @@ describe('tue/wed/thu scripts', () => {
     expect(clueIds(rest)).toEqual(['C7']);
   });
 
-  it('wednesday messenger: share is a flagged trap; capture then list gives C5 then C6', () => {
-    const have: string[] = [];
-    const s = new InkSession('wed', { hasClue: (id) => have.includes(id), trust: () => 0 });
-    s.begin('wed_chat');
-    const next = (): Beat => { let b = s.step(); while (b.type === 'line') b = s.step(); return b; };
-    let b = next();
-    expect(b.type === 'choices' && b.choices.map((c) => c.effects.map((e) => e.kind))).toEqual([['shared'], ['clue'], []]);
-    if (b.type !== 'choices') throw new Error();
-    s.choose(b.choices[0].index); // 공유 (함정)
-    b = next();
-    expect(b.type === 'choices' && b.choices.map((c) => c.effects.map((e) => e.kind))).toEqual([['clue'], []]);
-    if (b.type !== 'choices') throw new Error();
-    have.push('C5');
-    s.choose(b.choices[0].index); // 캡처
-    b = next();
-    expect(b.type === 'choices' && b.choices.some((c) => c.effects.some((e) => e.kind === 'clue' && e.id === 'C6'))).toBe(true);
+  it('wednesday messenger: pick exactly one — share is a flagged trap, capture gives C5, capture+list gives C5 and C6', () => {
+    const run1 = (pick: number) => {
+      const s = new InkSession('wed', { hasClue: () => false, trust: () => 0 });
+      s.begin('wed_chat');
+      let b = s.step();
+      while (b.type === 'line') b = s.step();
+      if (b.type !== 'choices') throw new Error();
+      const kinds = b.choices.map((c) => c.effects.map((e) => (e.kind === 'clue' ? e.id : e.kind)));
+      s.choose(b.choices[pick].index);
+      let after = s.step();
+      while (after.type === 'line') after = s.step();
+      return { kinds, ended: after.type === 'end' };
+    };
+    const r = run1(0);
+    expect(r.kinds).toEqual([['shared'], ['C5'], ['C5', 'C6'], []]);
+    for (let k = 0; k < 4; k++) expect(run1(k).ended).toBe(true); // 하나만 고르면 바로 끝난다
   });
 });
