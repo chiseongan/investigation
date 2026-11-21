@@ -329,7 +329,7 @@
     align-items: flex-end;
     min-height: 220px;
     gap: 8px;
-    padding: 0 12px 14px;
+    padding: 0 0 14px;
   }
   .side {
     display: flex;
@@ -339,6 +339,16 @@
   }
   .mine {
     flex: 0 0 auto;
+  }
+  /* 양 옆 가장자리로 바짝 붙인다 (그림 둘레의 투명 여백만큼 화면 밖으로) */
+  .mine .who {
+    margin-left: -4cqw;
+  }
+  .theirs .who:first-child {
+    margin-right: -4cqw;
+    /* 대화 상대는 항상 앞에 서고, 끼어든 사람은 그 뒤에서 반쯤 가려진다 */
+    position: relative;
+    z-index: 2;
   }
   /* 대화 상대는 오른쪽 끝에 고정. 끼어든 사람은 그 왼쪽에 차례로 서고, 기존 인물은 자리를 지킨다 */
   .theirs {
@@ -359,7 +369,7 @@
     /* 대화가 시작될 때 서서히 나타난다 (투명도만 사용) */
     animation: appear 0.65s ease-out;
   }
-  /* 끼어든 사람은 앞사람 왼쪽에 반쯤 겹쳐 선다 (칸 폭의 절반만큼 떨어짐) */
+  /* 끼어든 사람은 대화 상대 왼쪽 뒤에서 반쯤 가려져 나타난다 (칸 폭의 절반만큼 겹침) */
   .theirs .who.bust + .who.bust {
     margin-right: calc(var(--slot) * -0.5);
   }
