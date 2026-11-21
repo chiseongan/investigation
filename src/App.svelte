@@ -8,6 +8,7 @@
   import StartScreen from './components/StartScreen.svelte';
   import SlotSelect from './components/SlotSelect.svelte';
   import DayEnd from './components/DayEnd.svelte';
+  import DayEndNovel from './components/DayEndNovel.svelte';
   import Notebook from './components/Notebook.svelte';
   import { DAY_SECONDS } from './data/config';
   import { DAYS, ROOMS, SCENES, SLOT_LABEL, SLOT_ORDER, availableSlots, type SlotId } from './data/rooms';
@@ -283,7 +284,11 @@
         {/if}
       {/key}
     {:else if $game.phase === 'dayEnd'}
-      <DayEnd {day} gs={$game} {hasNext} onNext={() => withCurtain(() => beginDay(false), dayCaption($game.dayIndex + 1))} onReport={openReport} onNotebook={() => (notebookOpen = true)} onRestart={restart} />
+      {#if $game.mode === 'novel'}
+        <DayEndNovel {day} gs={$game} {hasNext} onNext={() => withCurtain(() => beginDay(false), dayCaption($game.dayIndex + 1))} onReport={openReport} onNotebook={() => (notebookOpen = true)} onRestart={restart} />
+      {:else}
+        <DayEnd {day} gs={$game} {hasNext} onNext={() => withCurtain(() => beginDay(false), dayCaption($game.dayIndex + 1))} onReport={openReport} onNotebook={() => (notebookOpen = true)} onRestart={restart} />
+      {/if}
     {/if}
   {/if}
 

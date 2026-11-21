@@ -11,7 +11,7 @@ export interface Clue {
 }
 
 export const CLUES: Clue[] = [
-  { id: 'C1', type: '징후', day: 'mon', title: '혼자 먹는 급식', desc: '점심시간, 지우는 교실 구석에서 혼자 급식을 먹는다. 아무도 옆자리에 앉지 않는다.' },
+  { id: 'C1', type: '징후', day: 'mon', title: '혼자 먹는 급식', desc: '점심시간, 지우는 급식실 구석에서 혼자 급식을 먹는다. 아무도 옆자리에 앉지 않는다.' },
   { id: 'C2', type: '징후', day: 'mon', title: '단톡방에 초대되지 않음', desc: '반 단톡방에 지우만 초대되지 않았다. "그냥 안 불렀어"라는 말을 들었다.' },
   { id: 'T1', type: '목격', day: 'mon', trap: true, title: '교실 뒤에서 벌어진 몸싸움', desc: '민준과 태오가 헤드락을 걸며 몸싸움을 하고 있었다. 둘 다 웃고 있었다.' },
   { id: 'C3', type: '목격', day: 'tue', title: '지우를 부르는 비하 별명', desc: '쉬는 시간, 몇몇 학생이 지우를 비하하는 별명으로 부르며 웃었다.' },
