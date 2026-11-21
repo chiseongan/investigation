@@ -285,9 +285,9 @@
       {/key}
     {:else if $game.phase === 'dayEnd'}
       {#if $game.mode === 'novel'}
-        <DayEndNovel {day} gs={$game} {hasNext} onNext={() => withCurtain(() => beginDay(false), dayCaption($game.dayIndex + 1))} onReport={openReport} onNotebook={() => (notebookOpen = true)} onRestart={restart} />
+        <DayEndNovel {day} gs={$game} {hasNext} onNext={() => withCurtain(() => beginDay(false), dayCaption($game.dayIndex + 1))} onReport={openReport} onNotebook={() => (notebookOpen = true)} />
       {:else}
-        <DayEnd {day} gs={$game} {hasNext} onNext={() => withCurtain(() => beginDay(false), dayCaption($game.dayIndex + 1))} onReport={openReport} onNotebook={() => (notebookOpen = true)} onRestart={restart} />
+        <DayEnd {day} gs={$game} {hasNext} onNext={() => withCurtain(() => beginDay(false), dayCaption($game.dayIndex + 1))} onReport={openReport} onNotebook={() => (notebookOpen = true)} />
       {/if}
     {/if}
   {/if}

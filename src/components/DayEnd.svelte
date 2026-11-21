@@ -10,8 +10,7 @@
     onNext,
     onReport,
     onNotebook,
-    onRestart,
-  }: { day: DayDef; gs: GameState; hasNext: boolean; onNext: () => void; onReport: () => void; onNotebook: () => void; onRestart: () => void } = $props();
+  }: { day: DayDef; gs: GameState; hasNext: boolean; onNext: () => void; onReport: () => void; onNotebook: () => void } = $props();
 
   const got = $derived(gs.clues.map((id) => clueById(id)).filter((c) => c && c.day === day.id));
 </script>
@@ -31,7 +30,6 @@
     {:else}
       <button class="btn primary" onclick={onReport}>최종 보고서 작성</button>
     {/if}
-    <button class="btn ghost" onclick={onRestart}>새 수사 시작</button>
   </div>
 </main>
 

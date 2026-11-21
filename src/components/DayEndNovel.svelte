@@ -13,8 +13,7 @@
     onNext,
     onReport,
     onNotebook,
-    onRestart,
-  }: { day: DayDef; gs: GameState; hasNext: boolean; onNext: () => void; onReport: () => void; onNotebook: () => void; onRestart: () => void } = $props();
+  }: { day: DayDef; gs: GameState; hasNext: boolean; onNext: () => void; onReport: () => void; onNotebook: () => void } = $props();
 
   // svelte-ignore state_referenced_locally
   const got = gs.clues.map((id) => clueById(id)).filter((c) => !!c && c.day === day.id) as NonNullable<ReturnType<typeof clueById>>[];
@@ -77,7 +76,6 @@
         <button class="btn primary" onclick={onReport}>최종 보고서 작성</button>
       {/if}
     </div>
-    <button class="restart" onclick={onRestart}>새 수사 시작</button>
   </div>
 </section>
 
@@ -211,7 +209,7 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    padding: 12px 16px calc(10px + env(safe-area-inset-bottom));
+    padding: 12px 16px calc(14px + env(safe-area-inset-bottom));
     background: #fff;
     border-radius: 18px 18px 0 0;
     box-shadow: 0 -2px 0 #dfe4ec;
@@ -266,17 +264,6 @@
     background: #fff;
     color: #1f2a44;
     border: 2px solid #cfd7e5;
-  }
-  .restart {
-    flex: none;
-    min-height: 44px;
-    border: 0;
-    background: transparent;
-    font: inherit;
-    font-size: 14px;
-    color: #5b6781;
-    text-decoration: underline;
-    cursor: pointer;
   }
   @keyframes appear {
     from {
