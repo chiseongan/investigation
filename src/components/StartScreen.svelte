@@ -29,7 +29,7 @@
     <div class="shade" aria-hidden="true"></div>
     <div class="head">
       <p class="eyebrow">학교 안전 수사관</p>
-      <h1>잠입 수사<br /><small>2학년 2반의 일주일</small></h1>
+      <h1>잠입 수사<br /><small>1학년 1반의 일주일</small></h1>
       <p class="sub">이 이야기의 학교와 인물은 모두 가상입니다.</p>
     </div>
     <!-- 교문 앞: 왼쪽에 나, 오른쪽에 수사 기록지 -->
@@ -49,10 +49,10 @@
         />
       {/each}
       <div class="file rec">
-        <p class="tab">수사 기록지 · 2학년 2반</p>
+        <p class="tab">수사 기록지 · 1학년 1반</p>
         <dl class="rows">
           <div><dt>접수</dt><dd>익명 제보</dd></div>
-          <div><dt>대상</dt><dd>2학년 2반 (가상)</dd></div>
+          <div><dt>대상</dt><dd>1학년 1반 (가상)</dd></div>
           <div><dt>담당</dt><dd>전학생으로 위장한 수사관</dd></div>
           <div><dt>기간</dt><dd>월요일 ~ 금요일</dd></div>
         </dl>
@@ -72,11 +72,11 @@
       <p class="eyebrow">수사관 임명</p>
       <h2>제보가 들어왔습니다</h2>
       <div class="file big">
-        <p class="tab">사건 파일 · 2학년 2반</p>
-        <p class="memo">“2반에서 누군가 괴롭힘을 당하고 있다.”<br />누가, 어떻게인지는 모른다.</p>
+        <p class="tab">사건 파일 · 1학년 1반</p>
+        <p class="memo">“1반에서 누군가 괴롭힘을 당하고 있다.”<br />누가, 어떻게인지는 모른다.</p>
         <span class="stamp">제보 접수</span>
       </div>
-      <p class="order">당신은 교육청이 보낸 학교 안전 수사관입니다. 2학년 2반에 <b>전학생</b>으로 위장해 잠입하세요. 월요일부터 목요일까지 관찰하고, 금요일에 최종 보고를 합니다.</p>
+      <p class="order">당신은 교육청이 보낸 학교 안전 수사관입니다. 1학년 1반에 <b>전학생</b>으로 위장해 잠입하세요. 월요일부터 목요일까지 관찰하고, 금요일에 최종 보고를 합니다.</p>
       <div class="rules paper">
         <h3>수사 규칙</h3>
         <ul>

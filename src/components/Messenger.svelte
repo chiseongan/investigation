@@ -96,7 +96,7 @@
 
 <div class="phone">
   <header>
-    <strong>2-2 우리반</strong>
+    <strong>1-1 우리반</strong>
     <span>27명</span>
   </header>
 
