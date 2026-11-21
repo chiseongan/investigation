@@ -185,14 +185,14 @@ export const SCENES: Record<string, SceneDef> = {
     ],
   },
   mon_lunch: {
-    id: 'mon_lunch', room: 'classroom', slot: 'lunch', start: { c: 8, r: 9 },
+    id: 'mon_lunch', room: 'cafeteria', slot: 'lunch', start: { c: 7, r: 7 },
     items: [
-      { id: 'corner', sprite: 'table', c: 0, r: 8, label: '구석 자리', kind: 'object', knot: 'lunch_corner', cast: ['jiwoo'] },
-      npc('jiwoo', 1, 8, '지우', 'lunch_jiwoo'),
-      npc('seoyeon', 5, 8, '서연', 'lunch_seoyeon'),
-      npc('daeun', 3, 2, '다은', 'lunch_daeun_daily'),
-      npc('minjun', 7, 4, '민준', 'lunch_minjun'),
-      watch('tray', 9, 7, '식판 반납대', 'lunch_watch_tray', ['seoyeon', 'jiwoo']),
+      { id: 'corner', sprite: 'table', c: 0, r: 6, label: '구석 자리', kind: 'object', knot: 'lunch_corner', cast: ['jiwoo'] },
+      npc('jiwoo', 1, 5, '지우', 'lunch_jiwoo'),
+      npc('seoyeon', 5, 6, '서연', 'lunch_seoyeon'),
+      npc('daeun', 1, 3, '다은', 'lunch_daeun_daily'),
+      npc('minjun', 4, 2, '민준', 'lunch_minjun'),
+      watch('tray', 7, 4, '식판 반납대', 'lunch_watch_tray', ['seoyeon', 'jiwoo']),
     ],
   },
   // ---------- 화 ----------
