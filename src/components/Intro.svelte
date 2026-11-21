@@ -108,7 +108,7 @@
   }
   .who.bust img {
     width: auto;
-    height: var(--ih);
+    height: calc(var(--ih) * 1.154);
     max-width: none;
   }
   .who img {

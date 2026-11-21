@@ -19,7 +19,7 @@ export interface ChoiceView {
 }
 
 export type Beat =
-  | { type: 'line'; speaker: CharId | null; text: string; effects: Effect[]; photo: boolean; enter?: CharId[]; leave?: CharId[] }
+  | { type: 'line'; speaker: CharId | null; text: string; effects: Effect[]; photo: boolean; enter?: CharId[]; leave?: CharId[]; faces?: Record<string, string> }
   | { type: 'choices'; choices: ChoiceView[] }
   | { type: 'end' };
 
@@ -28,6 +28,7 @@ const TRUST_WHO = new Set(['jiwoo', 'minjun', 'seoyeon', 'doyun']);
 /**
  * 태그를 해석한다. 말:이름 은 speaker 로, 나머지는 효과로.
  * 등장:이름 / 퇴장:이름 은 대화 도중 다른 인물이 끼어들었다 가는 연출(대화형 화면에서만 쓴다).
+ * 표정:표정이름 은 말하는 사람의 표정, 표정:이름=표정이름 은 그 인물의 표정을 바꾼다(대화형 화면에서만 쓴다).
  */
 export function parseTags(tags: string[] | null | undefined): {
   speaker: CharId | null;
@@ -35,12 +36,14 @@ export function parseTags(tags: string[] | null | undefined): {
   photo: boolean;
   enter?: CharId[];
   leave?: CharId[];
+  faces?: Record<string, string>;
 } {
   let speaker: CharId | null = null;
   let photo = false;
   const effects: Effect[] = [];
   const enter: CharId[] = [];
   const leave: CharId[] = [];
+  const faceTags: { who: string | null; face: string }[] = [];
   for (const raw of tags ?? []) {
     const tag = raw.trim();
     let m: RegExpMatchArray | null;
@@ -50,6 +53,8 @@ export function parseTags(tags: string[] | null | undefined): {
       const id = charByName(m[2].trim());
       if (id && id !== 'me') (m[1] === '등장' ? enter : leave).push(id);
       else console.warn('[ink] 알 수 없는 등장/퇴장 대상:', tag);
+    } else if ((m = tag.match(/^표정:(?:(.+?)=)?(\w+)$/))) {
+      faceTags.push({ who: m[1] ? m[1].trim() : null, face: m[2] });
     } else if (tag === '공유') {
       effects.push({ kind: 'shared' });
     } else if ((m = tag.match(/^말:(.*)$/))) {
@@ -64,7 +69,13 @@ export function parseTags(tags: string[] | null | undefined): {
       console.warn('[ink] 알 수 없는 태그:', tag);
     }
   }
-  return { speaker, effects, photo, ...(enter.length ? { enter } : {}), ...(leave.length ? { leave } : {}) };
+  const faces: Record<string, string> = {};
+  for (const f of faceTags) {
+    const id = f.who ? charByName(f.who) : speaker;
+    if (id) faces[id] = f.face;
+    else console.warn('[ink] 표정 대상을 알 수 없음:', f.who);
+  }
+  return { speaker, effects, photo, ...(enter.length ? { enter } : {}), ...(leave.length ? { leave } : {}), ...(Object.keys(faces).length ? { faces } : {}) };
 }
 
 const STORIES: Record<string, string> = { mon, tue, wed, thu, fri };
@@ -94,9 +105,9 @@ export class InkSession {
   step(): Beat {
     if (this.story.canContinue) {
       const text = (this.story.Continue() ?? '').trim();
-      const { speaker, effects, photo, enter, leave } = parseTags(this.story.currentTags);
+      const { speaker, effects, photo, enter, leave, faces } = parseTags(this.story.currentTags);
       if (!text) return this.step();
-      return { type: 'line', speaker, text, effects, photo, enter, leave };
+      return { type: 'line', speaker, text, effects, photo, enter, leave, faces };
     }
     if (this.story.currentChoices.length) {
       return {

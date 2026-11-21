@@ -37,3 +37,12 @@ if (typeof Image !== 'undefined') {
     for (const src of list) new Image().src = src;
   }
 }
+
+/** 한 인물의 모든 표정을 미리 받아 둔다 (대화 도중 표정이 바뀔 때 깜빡이지 않도록) */
+const warmed = new Set<string>();
+export function warm(key: string) {
+  const p = PORTRAITS[key];
+  if (!p || warmed.has(key) || typeof Image === 'undefined') return;
+  warmed.add(key);
+  for (const src of Object.values(p.faces)) new Image().src = src;
+}

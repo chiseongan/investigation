@@ -5,7 +5,7 @@
   import { onMount } from 'svelte';
   import { CHARACTERS } from '../data/characters';
   import { MANIFEST } from '../assets/manifest';
-  import { portrait, type Face } from '../assets/portraits';
+  import { portrait, warm, type Face } from '../assets/portraits';
   import { clueById } from '../data/clues';
   import { ROOMS, SCENES, SLOT_LABEL, SLOT_ORDER, type Placed } from '../data/rooms';
   import VNBackground from './VNBackground.svelte';
@@ -69,7 +69,10 @@
   /** 인물 그림이 들어온 인물은 그 그림(표정 포함)을, 아니면 임시 그림을 쓴다 */
   const art = (key: string, face: Face = 'default'): { src: string; ratio: number | null } => portrait(key, face) ?? { src: sprite(key) ?? '', ratio: null };
   // 나의 표정: 느낀 점을 말할 땐 생각하는 얼굴, 단서를 얻으면 놀란 얼굴
-  const myFace = $derived<Face>(step === 'reflect' ? 'thinking' : step === 'clue' ? 'surprised' : 'default');
+  // 대사에 붙은 표정(#표정:)은 그 인물이 다음에 말할 때까지 이어진다. 말하는데 표정 표시가 없으면 기본 표정으로 돌아간다.
+  let faces = $state<Record<string, string>>({});
+  const faceOf = (id: string | null): Face => (id && faces[id]) || 'default';
+  const myFace = $derived<Face>(step === 'reflect' ? 'thinking' : step === 'clue' ? 'surprised' : faceOf('me'));
 
   function apply(effects: Effect[]) {
     for (const e of effects) {
@@ -98,7 +101,10 @@
     choices = null;
     guests = [];
     leaving = [];
+    faces = {};
     fadingOut = false;
+    if (it.char) warm(it.char);
+    for (const id of it.cast ?? []) warm(id);
     session = sessionFor(dayId);
     session.begin(it.knot);
     step = 'talking';
@@ -121,6 +127,10 @@
       for (const id of [...(beat.enter ?? []), ...(beat.speaker ? [beat.speaker] : [])]) if (here(id) && !g.includes(id)) g.push(id);
       guests = g.slice(-2);
       leaving = beat.leave ?? [];
+      const nf = { ...faces };
+      if (beat.speaker) nf[beat.speaker] = 'default';
+      Object.assign(nf, beat.faces);
+      faces = nf;
       line = { speaker: beat.speaker, text: beat.text };
       choices = null;
     } else if (beat.type === 'choices') {
@@ -235,7 +245,7 @@
         <div class="side theirs">
           {#each figures as f (f.key)}
             <div class="who" class:bust={!!art(f.sprite).ratio} style:--ar={art(f.sprite).ratio} class:out={fadingOut} class:front={!!speaker && speaker === f.char} class:dim={speaker === 'me' || (!!speaker && speaker !== f.char)}>
-              <img src={art(f.sprite).src} alt="" draggable="false" />
+              <img src={art(f.sprite, f.char ? faceOf(f.char) : 'default').src} alt="" draggable="false" />
               {#if !art(f.sprite).ratio}<span class="tag">{f.label}</span>{/if}
             </div>
           {/each}
@@ -410,7 +420,8 @@
   }
   .who.bust img {
     width: auto;
-    height: var(--ih);
+    /* 그림 틀은 머리 위에 여유(팔을 든 자세용)가 있어 그만큼 더 높다 */
+    height: calc(var(--ih) * 1.154);
     max-width: none;
   }
   .who img {

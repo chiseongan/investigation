@@ -1,74 +1,138 @@
 {
   "me": {
-    "ratio": 0.4632,
+    "ratio": 0.5939,
     "faces": [
       "default",
       "smile",
       "surprised",
-      "thinking"
+      "thinking",
+      "serious",
+      "concerned",
+      "awkward",
+      "warm",
+      "flustered",
+      "determined",
+      "relieved",
+      "suspicious"
     ]
   },
   "jiwoo": {
-    "ratio": 0.4283,
+    "ratio": 0.3758,
     "faces": [
       "default",
       "smile",
       "surprised",
-      "sad"
+      "sad",
+      "cowering",
+      "faint",
+      "blank",
+      "teary",
+      "guarded",
+      "blush",
+      "tired",
+      "headdown"
     ]
   },
   "minjun": {
-    "ratio": 0.7868,
+    "ratio": 0.6736,
     "faces": [
       "default",
       "playful",
       "shrug",
-      "cold"
+      "cold",
+      "bright",
+      "irritated",
+      "teasing",
+      "flustered",
+      "alone",
+      "forced",
+      "angry",
+      "dejected"
     ]
   },
   "seoyeon": {
-    "ratio": 0.4044,
+    "ratio": 0.3646,
     "faces": [
       "default",
       "glance",
       "away",
-      "resolved"
+      "resolved",
+      "anxious",
+      "teary",
+      "guilty",
+      "relieved",
+      "surprised",
+      "shy",
+      "bitelip",
+      "determined"
     ]
   },
   "doyun": {
-    "ratio": 0.4301,
+    "ratio": 0.3822,
     "faces": [
       "default",
       "lipbite",
       "stiff",
-      "relieved"
+      "relieved",
+      "scared",
+      "determined",
+      "avoid",
+      "grateful",
+      "regret",
+      "cautious",
+      "dazed",
+      "gloomy"
     ]
   },
   "daeun": {
-    "ratio": 0.7022,
+    "ratio": 0.6067,
     "faces": [
       "default",
       "laugh",
       "glare",
-      "bored"
+      "bored",
+      "surprised",
+      "feigned",
+      "wink",
+      "proud",
+      "apathetic",
+      "excited",
+      "awkward",
+      "angry"
     ]
   },
   "taeo": {
-    "ratio": 0.7629,
+    "ratio": 0.6561,
     "faces": [
       "default",
       "surrender",
       "playful",
-      "surprised"
+      "surprised",
+      "cheer",
+      "sleepy",
+      "flustered",
+      "wary",
+      "proud",
+      "pout",
+      "whisper",
+      "worried"
     ]
   },
   "teacher": {
-    "ratio": 0.421,
+    "ratio": 0.6051,
     "faces": [
       "default",
       "worried",
       "serious",
-      "relieved"
+      "relieved",
+      "warm",
+      "firm",
+      "surprised",
+      "sigh",
+      "startled",
+      "encourage",
+      "moved",
+      "pondering"
     ]
   }
 }
