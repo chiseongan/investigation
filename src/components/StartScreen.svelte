@@ -35,6 +35,12 @@
       <p class="eyebrow">학교 안전 수사관</p>
       <h1>잠입 수사<br /><small>2학년 2반의 일주일</small></h1>
       <p class="sub">이 이야기의 학교와 인물은 모두 가상입니다.</p>
+      <!-- 수사 파일 느낌: 테이프로 붙인 접수 메모와 '제보 접수' 도장 -->
+      <div class="file">
+        <p class="tab">사건 파일 · 2학년 2반</p>
+        <p class="memo">“2반에서 누군가 괴롭힘을 당하고 있다.”<br />누가, 어떻게인지는 모른다.</p>
+        <span class="stamp">제보 접수</span>
+      </div>
     </div>
     <!-- 교문 앞에 선 2반 아이들. 한 명은 조금 떨어져 서 있다 -->
     <div class="crowd" aria-hidden="true">
@@ -124,6 +130,75 @@
   .head h1 {
     font-size: 46px;
   }
+  .file {
+    position: relative;
+    align-self: flex-start;
+    width: min(300px, 82%);
+    margin-top: 6px;
+    padding: 20px 14px 12px;
+    background: #f4edda;
+    color: #1f2a44;
+    border-radius: 4px 4px 8px 4px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+    transform: rotate(-1.5deg);
+    text-shadow: none;
+    animation: slidein 0.6s ease-out 0.1s both;
+  }
+  /* 테이프 */
+  .file::before {
+    content: '';
+    position: absolute;
+    top: -9px;
+    left: 50%;
+    width: 64px;
+    height: 18px;
+    margin-left: -32px;
+    background: rgba(232, 163, 61, 0.55);
+    transform: rotate(2deg);
+  }
+  .tab {
+    position: absolute;
+    top: 6px;
+    left: 14px;
+    margin: 0;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: #8a6a2a;
+  }
+  .memo {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    font-weight: 600;
+  }
+  .stamp {
+    position: absolute;
+    right: -8px;
+    bottom: -14px;
+    padding: 4px 10px;
+    border: 3px solid #b23a48;
+    border-radius: 6px;
+    background: rgba(244, 237, 218, 0.7);
+    color: #b23a48;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    transform: rotate(-9deg);
+    animation: stamp 0.35s cubic-bezier(0.2, 1.4, 0.4, 1) 1s both;
+  }
+  @keyframes slidein {
+    from {
+      opacity: 0;
+      transform: translateY(10px) rotate(-1.5deg);
+    }
+  }
+  @keyframes stamp {
+    from {
+      opacity: 0;
+      transform: scale(1.8) rotate(-9deg);
+    }
+  }
   .crowd {
     position: relative;
     z-index: 1;
@@ -164,7 +239,9 @@
     box-shadow: 0 -10px 24px rgba(31, 42, 68, 0.6);
   }
   @media (prefers-reduced-motion: reduce) {
-    .fig {
+    .fig,
+    .file,
+    .stamp {
       animation: none;
     }
   }
