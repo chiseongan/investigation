@@ -2,6 +2,8 @@
   // 시작 화면 + 수사관 임명(브리핑, 규칙 1장)
   import { DAY_SECONDS } from '../data/config';
   import type { Mode } from '../lib/gameState';
+  import { portrait } from '../assets/portraits';
+  import VNBackground from './VNBackground.svelte';
 
   let {
     phase,
@@ -10,14 +12,46 @@
     onNew,
     onBegin,
   }: { phase: 'title' | 'briefing'; canResume?: boolean; onResume?: () => void; onNew: () => void; onBegin: (mode: Mode) => void } = $props();
+
+  // 타이틀 화면의 인물 구도: 뒤줄 셋, 가운데 앞줄에 나, 오른쪽 가장자리에 조금 떨어져 선 지우
+  // x: 가로 위치(%), h: 그림 높이(화면 폭 대비 %), up: 위로 올림(%, 뒤줄일수록 높이)
+  const CROWD = [
+    { key: 'taeo', face: 'default', x: 12, h: 66, up: 6, dim: true },
+    { key: 'minjun', face: 'bright', x: 31, h: 68, up: 5, dim: true },
+    { key: 'seoyeon', face: 'default', x: 66, h: 66, up: 6, dim: true },
+    { key: 'jiwoo', face: 'blank', x: 91, h: 68, up: 0, dim: false, apart: true },
+    { key: 'me', face: 'warm', x: 48, h: 82, up: 0, dim: false },
+  ].flatMap((c, i) => {
+    const p = portrait(c.key, c.face);
+    return p ? [{ ...c, src: p.src, i }] : [];
+  });
 </script>
 
-<main class="screen">
+<main class="screen" class:title={phase === 'title'}>
   {#if phase === 'title'}
-    <div class="center">
+    <div class="bg" aria-hidden="true"><VNBackground room="gate" t={0.1} /></div>
+    <div class="shade" aria-hidden="true"></div>
+    <div class="head">
       <p class="eyebrow">학교 안전 수사관</p>
       <h1>잠입 수사<br /><small>2학년 2반의 일주일</small></h1>
       <p class="sub">이 이야기의 학교와 인물은 모두 가상입니다.</p>
+    </div>
+    <!-- 교문 앞에 선 2반 아이들. 한 명은 조금 떨어져 서 있다 -->
+    <div class="crowd" aria-hidden="true">
+      {#each CROWD as c (c.key)}
+        <img
+          class="fig"
+          class:dim={c.dim}
+          class:apart={c.apart}
+          src={c.src}
+          alt=""
+          draggable="false"
+          style:--x="{c.x}%"
+          style:--h={c.h}
+          style:--up={c.up}
+          style:--d="{0.15 + c.i * 0.12}s"
+        />
+      {/each}
     </div>
     <div class="actions">
       {#if canResume}<button class="btn primary" onclick={onResume}>이어서 하기</button>{/if}
@@ -61,6 +95,78 @@
     background: #1f2a44;
     color: #fff;
     overflow-y: auto;
+  }
+  /* 타이틀: 교문 배경 + 인물 구도 + 아래 남색 판 */
+  .screen.title {
+    position: relative;
+    padding: 0;
+    overflow: hidden;
+  }
+  .bg {
+    position: absolute;
+    inset: 0;
+  }
+  .shade {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(31, 42, 68, 0.92) 0%, rgba(31, 42, 68, 0.55) 32%, rgba(31, 42, 68, 0.05) 55%, rgba(31, 42, 68, 0) 100%);
+    pointer-events: none;
+  }
+  .head {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: calc(30px + env(safe-area-inset-top)) 22px 0;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+  }
+  .head h1 {
+    font-size: 46px;
+  }
+  .crowd {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    min-height: 120px;
+    container-type: size;
+    overflow: hidden;
+  }
+  .fig {
+    position: absolute;
+    left: var(--x);
+    /* 그림 아래 10%는 아래 판 뒤로 가려 상반신만 보인다 */
+    height: min(calc(var(--h) * 1cqw), 128cqh);
+    bottom: calc(var(--up) * 1cqw - 0.1 * min(calc(var(--h) * 1cqw), 128cqh));
+    width: auto;
+    max-width: none;
+    transform: translateX(-50%);
+    pointer-events: none;
+    animation: gather 0.7s ease-out both;
+    animation-delay: var(--d);
+  }
+  .fig.dim {
+    filter: brightness(0.9);
+  }
+  .fig.apart {
+    filter: saturate(0.75) brightness(0.92);
+  }
+  @keyframes gather {
+    from {
+      opacity: 0;
+    }
+  }
+  .screen.title .actions {
+    position: relative;
+    z-index: 2;
+    padding: 18px 22px calc(18px + env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, rgba(31, 42, 68, 0.88), #1f2a44 40%);
+    box-shadow: 0 -10px 24px rgba(31, 42, 68, 0.6);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fig {
+      animation: none;
+    }
   }
   .center {
     flex: 1;
