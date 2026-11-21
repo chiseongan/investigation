@@ -27,7 +27,7 @@
   });
 </script>
 
-<main class="screen" class:title={phase === 'title'}>
+<main class="screen" class:title={phase === 'title'} class:brief={phase === 'briefing'}>
   {#if phase === 'title'}
     <div class="bg" aria-hidden="true"><VNBackground room="gate" t={0.1} /></div>
     <div class="shade" aria-hidden="true"></div>
@@ -65,12 +65,18 @@
       <p class="fine">소리 없음 · 로그인 없음 · 개인정보를 수집하지 않아요{canResume ? ' · 이어하기는 이 탭에만 남아요' : ''}</p>
     </div>
   {:else}
+    <div class="bg" aria-hidden="true"><VNBackground room="gate" t={0.1} /></div>
+    <div class="shade heavy" aria-hidden="true"></div>
     <div class="center left">
       <p class="eyebrow">수사관 임명</p>
       <h2>제보가 들어왔습니다</h2>
-      <p class="quote">"2반에서 누군가 괴롭힘을 당하고 있다. 누가, 어떻게인지는 모른다."</p>
-      <p>당신은 교육청이 보낸 학교 안전 수사관입니다. 2학년 2반에 <b>전학생</b>으로 위장해 잠입하세요. 월요일부터 목요일까지 관찰하고, 금요일에 최종 보고를 합니다.</p>
-      <div class="rules">
+      <div class="file big">
+        <p class="tab">사건 파일 · 2학년 2반</p>
+        <p class="memo">“2반에서 누군가 괴롭힘을 당하고 있다.”<br />누가, 어떻게인지는 모른다.</p>
+        <span class="stamp">제보 접수</span>
+      </div>
+      <p class="order">당신은 교육청이 보낸 학교 안전 수사관입니다. 2학년 2반에 <b>전학생</b>으로 위장해 잠입하세요. 월요일부터 목요일까지 관찰하고, 금요일에 최종 보고를 합니다.</p>
+      <div class="rules paper">
         <h3>수사 규칙</h3>
         <ul>
           <li>하루는 등교, 쉬는 시간, 점심처럼 아침부터 차례로 흘러가요. 탐색형은 앞 시간대를 관찰해야 다음이 열리고, 대화형은 자동으로 이어집니다.</li>
@@ -117,6 +123,45 @@
     inset: 0;
     background: linear-gradient(180deg, rgba(31, 42, 68, 0.92) 0%, rgba(31, 42, 68, 0.55) 32%, rgba(31, 42, 68, 0.05) 55%, rgba(31, 42, 68, 0) 100%);
     pointer-events: none;
+  }
+  /* 수사관 임명: 같은 교문 배경 위에 서류 느낌 */
+  .screen.brief {
+    position: relative;
+    padding: 0;
+    overflow: hidden;
+  }
+  .shade.heavy {
+    background: linear-gradient(180deg, rgba(31, 42, 68, 0.9), rgba(31, 42, 68, 0.78) 60%, rgba(31, 42, 68, 0.9));
+  }
+  .screen.brief .center {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: calc(26px + env(safe-area-inset-top)) 22px 14px;
+  }
+  .file.big {
+    width: min(340px, 92%);
+    margin: 10px 0 6px;
+  }
+  .file.big .memo {
+    font-size: 15px;
+  }
+  .order {
+    margin: 4px 0 0;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+  }
+  .rules.paper {
+    background: #f4edda;
+    color: #1f2a44;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  }
+  .rules.paper h3 {
+    color: #b23a48;
+  }
+  .rules.paper ul {
+    color: #1f2a44;
   }
   .head {
     position: relative;
@@ -231,7 +276,8 @@
       opacity: 0;
     }
   }
-  .screen.title .actions {
+  .screen.title .actions,
+  .screen.brief .actions {
     position: relative;
     z-index: 2;
     padding: 18px 22px calc(18px + env(safe-area-inset-bottom));
@@ -282,13 +328,6 @@
     margin: 0;
     font-size: 13px;
     color: #9aa8c6;
-  }
-  .quote {
-    margin: 0;
-    padding: 12px 14px;
-    border-left: 4px solid #e8a33d;
-    background: #2a3757;
-    border-radius: 8px;
   }
   .rules {
     background: #2a3757;
