@@ -215,7 +215,9 @@
           // 목격 장면은 대화 상대 대신 지켜보는 인물들이 서 있다
           ...(current.cast
             ? current.cast.map((id) => ({ key: 'c_' + id, sprite: CHARACTERS[id].sprite, label: CHARACTERS[id].name, char: id as CharId | null }))
-            : [{ key: current.id, sprite: current.sprite, label: current.label, char: current.char ?? null }]),
+            : current.kind === 'object'
+              ? [] // 물건을 살펴볼 때는 사람이 나오지 않는다 (임시 그림 대신 빈 무대)
+              : [{ key: current.id, sprite: current.sprite, label: current.label, char: current.char ?? null }]),
           ...guests.map((id) => ({ key: 'g_' + id, sprite: CHARACTERS[id].sprite, label: CHARACTERS[id].name, char: id as CharId | null })),
         ]
       : [],

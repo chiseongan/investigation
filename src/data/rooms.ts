@@ -187,7 +187,7 @@ export const SCENES: Record<string, SceneDef> = {
   mon_lunch: {
     id: 'mon_lunch', room: 'classroom', slot: 'lunch', start: { c: 8, r: 9 },
     items: [
-      { id: 'corner', sprite: 'table', c: 0, r: 8, label: '구석 자리', kind: 'object', knot: 'lunch_corner' },
+      { id: 'corner', sprite: 'table', c: 0, r: 8, label: '구석 자리', kind: 'object', knot: 'lunch_corner', cast: ['jiwoo'] },
       npc('jiwoo', 1, 8, '지우', 'lunch_jiwoo'),
       npc('seoyeon', 5, 8, '서연', 'lunch_seoyeon'),
       npc('daeun', 3, 2, '다은', 'lunch_daeun_daily'),
