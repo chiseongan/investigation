@@ -307,6 +307,8 @@
     justify-content: flex-end;
     background: #dde5ef;
     overflow: hidden;
+    /* 인물 크기를 화면 폭에도 맞추기 위한 기준 (cqw = 무대 폭의 1%) */
+    container-type: inline-size;
   }
   .place {
     position: absolute;
@@ -338,9 +340,12 @@
   .mine {
     flex: 0 0 auto;
   }
+  /* 대화 상대는 오른쪽 끝에 고정. 끼어든 사람은 그 왼쪽에 차례로 서고, 기존 인물은 자리를 지킨다 */
   .theirs {
     flex: 1 1 0;
-    justify-content: flex-end;
+    flex-direction: row-reverse;
+    justify-content: flex-start;
+    gap: 0;
   }
   .who {
     flex: 0 1 140px;
@@ -354,15 +359,17 @@
     /* 대화가 시작될 때 서서히 나타난다 (투명도만 사용) */
     animation: appear 0.65s ease-out;
   }
-  /* 끼어든 사람은 앞사람과 조금 겹쳐 서서 좁은 화면에 다 들어가게 한다 */
+  /* 끼어든 사람은 앞사람 왼쪽에 반쯤 겹쳐 선다 (칸 폭의 절반만큼 떨어짐) */
   .theirs .who.bust + .who.bust {
-    margin-left: calc(var(--ih) * var(--ar) * -0.3);
+    margin-right: calc(var(--slot) * -0.5);
   }
   .who.dim {
     opacity: 0.55;
   }
   .who.front {
     transform: translateY(-8px);
+    position: relative;
+    z-index: 1;
   }
   /* 대화가 끝날 때 서서히 사라진다 */
   .who.out {
@@ -383,7 +390,11 @@
   .who.bust {
     flex: 0 0 auto;
     --fh: calc(100dvh - 64px - var(--boxh));
-    --ih: calc(var(--fh) * 0.667);
+    /* 키는 무대 높이와 폭 중 작은 쪽에 맞춘다: 폭이 좁아도 '나'와 상대가 겹치지 않게 */
+    --ih: min(calc(var(--fh) * 0.667), 62cqw);
+    /* 모든 인물이 같은 폭의 칸에 가운데 맞춰 서므로, 인물이 달라도 서는 자리가 같다 */
+    --slot: calc(var(--ih) * 0.72);
+    width: var(--slot);
     /* 그림 아래 7%는 무대 밖으로 내려 가린다. 무대 아래쪽 여백(14px)만큼도 더 내린다 */
     margin-bottom: calc(var(--ih) * -0.07 - 14px);
   }
