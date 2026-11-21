@@ -13,17 +13,13 @@
     onBegin,
   }: { phase: 'title' | 'briefing'; canResume?: boolean; onResume?: () => void; onNew: () => void; onBegin: (mode: Mode) => void } = $props();
 
-  // 타이틀 화면의 인물 구도: 뒤줄 셋, 가운데 앞줄에 나, 오른쪽 가장자리에 조금 떨어져 선 지우
-  // x: 가로 위치(%), h: 그림 높이(화면 폭 대비 %), up: 위로 올림(%, 뒤줄일수록 높이)
+  // 타이틀 화면: 왼편에 나만 서고, 오른편에는 수사 기록지가 놓인다
+  // x: 가로 위치(%), h: 그림 높이(화면 폭 대비 %), up: 위로 올림(%)
   const CROWD = [
-    { key: 'taeo', face: 'default', x: 12, h: 66, up: 6, dim: true },
-    { key: 'minjun', face: 'bright', x: 31, h: 68, up: 5, dim: true },
-    { key: 'seoyeon', face: 'default', x: 66, h: 66, up: 6, dim: true },
-    { key: 'jiwoo', face: 'blank', x: 91, h: 68, up: 0, dim: false, apart: true },
-    { key: 'me', face: 'warm', x: 48, h: 82, up: 0, dim: false },
+    { key: 'me', face: 'warm', x: 27, h: 86, up: 0 },
   ].flatMap((c, i) => {
     const p = portrait(c.key, c.face);
-    return p ? [{ ...c, src: p.src, i }] : [];
+    return p ? [{ ...c, src: p.src, i, dim: false, apart: false }] : [];
   });
 </script>
 
@@ -35,15 +31,9 @@
       <p class="eyebrow">학교 안전 수사관</p>
       <h1>잠입 수사<br /><small>2학년 2반의 일주일</small></h1>
       <p class="sub">이 이야기의 학교와 인물은 모두 가상입니다.</p>
-      <!-- 수사 파일 느낌: 테이프로 붙인 접수 메모와 '제보 접수' 도장 -->
-      <div class="file">
-        <p class="tab">사건 파일 · 2학년 2반</p>
-        <p class="memo">“2반에서 누군가 괴롭힘을 당하고 있다.”<br />누가, 어떻게인지는 모른다.</p>
-        <span class="stamp">제보 접수</span>
-      </div>
     </div>
-    <!-- 교문 앞에 선 2반 아이들. 한 명은 조금 떨어져 서 있다 -->
-    <div class="crowd" aria-hidden="true">
+    <!-- 교문 앞: 왼쪽에 나, 오른쪽에 수사 기록지 -->
+    <div class="crowd">
       {#each CROWD as c (c.key)}
         <img
           class="fig"
@@ -58,6 +48,17 @@
           style:--d="{0.15 + c.i * 0.12}s"
         />
       {/each}
+      <div class="file rec">
+        <p class="tab">수사 기록지 · 2학년 2반</p>
+        <dl class="rows">
+          <div><dt>접수</dt><dd>익명 제보</dd></div>
+          <div><dt>대상</dt><dd>2학년 2반 (가상)</dd></div>
+          <div><dt>담당</dt><dd>전학생으로 위장한 수사관</dd></div>
+          <div><dt>기간</dt><dd>월요일 ~ 금요일</dd></div>
+        </dl>
+        <p class="memo">“누군가 괴롭힘을 당하고 있다. 누가, 어떻게인지는 모른다.”</p>
+        <span class="stamp">제보 접수</span>
+      </div>
     </div>
     <div class="actions">
       {#if canResume}<button class="btn primary" onclick={onResume}>이어서 하기</button>{/if}
@@ -231,6 +232,47 @@
     letter-spacing: 0.08em;
     transform: rotate(-9deg);
     animation: stamp 0.35s cubic-bezier(0.2, 1.4, 0.4, 1) 1s both;
+  }
+  /* 오른편 수사 기록지 */
+  .file.rec {
+    position: absolute;
+    right: 12px;
+    bottom: 5cqw;
+    width: calc(50% - 8px);
+    margin: 0;
+    padding: 22px 12px 14px;
+    z-index: 1;
+  }
+  .rows {
+    margin: 0 0 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+  .rows div {
+    display: flex;
+    gap: 6px;
+    padding-bottom: 3px;
+    border-bottom: 1px dashed rgba(31, 42, 68, 0.3);
+  }
+  .rows dt {
+    flex: none;
+    width: 2.2em;
+    font-weight: 800;
+    color: #8a6a2a;
+  }
+  .rows dd {
+    margin: 0;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+    word-break: keep-all;
+  }
+  .file.rec .memo {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: #3a4560;
   }
   @keyframes slidein {
     from {
