@@ -10,7 +10,11 @@ const ENDINGS: EndingId[] = ['resolved', 'insufficient', 'misidentified', 'parti
 describe('엔딩 영상 대본', () => {
   for (const e of ENDINGS) {
     it(`${e}: 장소·인물·표정이 모두 실제로 있고, 줄이 비어 있지 않다`, () => {
-      const shots = filmFor(e, 'taeo', '태오');
+      for (const p of e === 'misidentified' ? (['taeo', 'seoyeon', 'doyun', 'daeun'] as const) : (['taeo'] as const)) check(filmFor(e, p, '이름'));
+    });
+  }
+  function check(shots: ReturnType<typeof filmFor>) {
+    {
       expect(shots.length).toBeGreaterThan(0);
       for (const s of shots) {
         if (s.kind === 'card') {
@@ -30,7 +34,7 @@ describe('엔딩 영상 대본', () => {
           if (l.who && l.face) expect(FACES[l.who]?.faces, `${l.who}:${l.face}`).toContain(l.face);
         }
       }
-    });
+    }
   }
   it('엔딩 1은 지우의 회복 뒤 "그렇다면 민준이는 어떻게 됐을까?" 카드와 가해 딱지 장면이 이어진다', () => {
     const shots = filmFor('resolved', 'minjun', '민준');

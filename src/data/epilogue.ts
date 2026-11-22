@@ -140,24 +140,186 @@ const RESOLVED: Shot[] = [
   },
 ];
 
-/** 엔딩 2·3·4: 기존 회복 장면을 같은 방식의 컷으로 */
-function fromRecovery(ending: Exclude<EndingId, 'resolved'>, picked: CharId, name: string): Shot[] {
+/** 엔딩 2·3·4 맨 앞 컷: 기존 회복 장면(마지막에 건넬 말을 고른다) */
+function recoveryShot(ending: Exclude<EndingId, 'resolved'>, right: FilmFigure[], bg: string, fill: (s: string) => string): Shot {
   const rec = RECOVERY[ending];
-  const fill = (s: string) => s.replaceAll('{이름}', name);
-  const conv = (b: { speaker: CharId | null; text: string }, face?: string): FilmLine => L(b.speaker, fill(b.text), face);
-  const pickedFace: Record<string, string> = { taeo: 'worried', seoyeon: 'guilty', doyun: 'gloomy', daeun: 'apathetic', minjun: 'dejected' };
-  const right: FilmFigure[] =
-    ending === 'misidentified' ? [{ who: picked, face: pickedFace[picked] ?? 'default' }] : [{ who: 'jiwoo', face: ending === 'insufficient' ? 'sad' : 'headdown' }];
-  const bg = ending === 'participant' ? 'classroom' : 'hallway';
+  const conv = (b: { speaker: CharId | null; text: string }): FilmLine => L(b.speaker, fill(b.text));
+  return {
+    kind: 'scene', bg, t: 0.8, me: 'concerned', right,
+    lines: rec.beats.map(conv),
+    choices: rec.choices.map((c) => ({ text: fill(c.text), reply: c.reply.map(conv) })),
+  };
+}
+
+const same = (s: string) => s;
+
+/** 엔딩 2: 늦어진 도움 — 근거가 모자라 조치가 미뤄진 뒤 */
+function insufficient(): Shot[] {
   return [
+    recoveryShot('insufficient', [{ who: 'jiwoo', face: 'sad' }], 'hallway', same),
+    { kind: 'card', text: '한 달 뒤', hold: 1800 },
     {
-      kind: 'scene', bg, t: 0.8, me: 'concerned', right,
-      lines: rec.beats.map((b) => conv(b)),
-      choices: rec.choices.map((c) => ({ text: fill(c.text), reply: c.reply.map((b) => conv(b)) })),
+      kind: 'scene', bg: 'cafeteria', t: 0.5, me: 'concerned', place: '급식실 · 한 달 뒤',
+      right: [{ who: 'jiwoo', face: 'headdown' }, { who: 'minjun', face: 'bright' }],
+      lines: [
+        L(null, '조치가 미뤄진 사이, 달라진 것은 없다. 지우는 다시 구석 자리에서 혼자 먹는다.'),
+        L(null, '뒤쪽에서 민준 무리의 웃음소리가 가장 크게 들린다. 아무도 이상하다고 말하지 않는다.'),
+        L('me', '……내가 더 확인했어야 했는데.', 'concerned'),
+      ],
+    },
+    {
+      kind: 'scene', bg: 'classroom', t: 0.6, me: null, place: '교실 · 얼마 뒤',
+      right: [{ who: 'seoyeon', face: 'anxious' }, { who: 'doyun', face: 'gloomy' }],
+      lines: [
+        L(null, '서연은 말하려다 입을 다물고, 도윤은 눈을 피한다.'),
+        L(null, '"혼자 말해 봤자 달라지지 않는다"는 생각은, 지켜보는 사람들을 더 조용하게 만들 수 있다.'),
+      ],
+    },
+    { kind: 'card', text: '1년 뒤', hold: 1800 },
+    {
+      kind: 'scene', bg: 'hallway', t: 0.9, me: null, place: '복도 · 1년 뒤', faded: true,
+      right: [{ who: 'jiwoo', face: 'tired' }],
+      lines: [
+        L(null, '혼자 버티는 시간이 길어질수록, 학교에 가는 일은 점점 힘들어질 수 있다.'),
+        L(null, '한 번 쌓인 "아무도 도와주지 않는다"는 마음은 쉽게 풀리지 않는다.'),
+        L('jiwoo', '……그때 누군가 믿어 줬다면 달랐을까.', 'tired'),
+      ],
+    },
+    {
+      kind: 'scene', bg: 'counseling', t: 0.7, me: 'determined', place: '상담실',
+      right: [{ who: 'teacher', face: 'worried' }],
+      lines: [
+        L('teacher', '근거가 모자랐어요. 하지만 늦게라도 사실을 다시 확인하면, 도움은 시작될 수 있어요.', 'worried'),
+        L('me', '네. 놓친 단서와 사람을 다시 확인하겠습니다.', 'determined'),
+        L('teacher', '혼자 판단하지 말고, 어른과 함께요.', 'encourage'),
+      ],
+    },
+    {
+      kind: 'card',
+      text: '증거를 모으고,\n믿을 수 있는 어른에게 말하는 일은\n빠를수록 좋습니다.',
+      sub: '다시 한 번 시간을 거슬러 갈 수 있습니다. 이야기 속 학교와 인물은 모두 가상입니다.',
+      hold: 5000,
+    },
+  ];
+}
+
+/** 엔딩 3: 엉뚱한 지목 — 사건을 처음 시작한 학생이 아닌 사람을 지목한 뒤 */
+function misidentified(picked: CharId, name: string): Shot[] {
+  const fill = (s: string) => s.replaceAll('{이름}', name);
+  const faces: Record<string, { sad: string; calm: string }> = {
+    taeo: { sad: 'worried', calm: 'wary' },
+    seoyeon: { sad: 'guilty', calm: 'anxious' },
+    doyun: { sad: 'gloomy', calm: 'avoid' },
+    daeun: { sad: 'apathetic', calm: 'awkward' },
+  };
+  const pf = faces[picked] ?? { sad: 'default', calm: 'default' };
+  return [
+    recoveryShot('misidentified', [{ who: picked, face: pf.sad }], 'hallway', fill),
+    { kind: 'card', text: '소문', hold: 1800 },
+    {
+      kind: 'scene', bg: 'classroom', t: 0.55, me: 'concerned', place: '교실 · 다음 날', tag: '근거 없는 지목', tagFrom: 0,
+      right: [{ who: picked, face: pf.sad }],
+      lines: [
+        L(null, fill('근거 없이 지목된 {이름}에 대한 이야기는 순식간에 번질 수 있다.')),
+        L(null, '소문은 사실을 확인하기 전에 먼저 도착하고, 한 번 퍼지면 거두기 어렵다.'),
+        L(picked, '……나는 아무것도 안 했는데.', pf.sad),
+      ],
+    },
+    {
+      kind: 'scene', bg: 'cafeteria', t: 0.5, me: null, place: '급식실 · 같은 시각',
+      right: [{ who: 'jiwoo', face: 'cowering' }, { who: 'minjun', face: 'teasing' }],
+      lines: [
+        L(null, '그 사이, 진짜 이유는 가려진 채로 남아 있다.'),
+        L(null, '지우에 대한 괴롭힘은 계속될 수 있고, 지우는 "아무도 사실을 보지 않는다"고 느낄 수 있다.'),
+      ],
+    },
+    { kind: 'card', text: '시간이 흐른 뒤', hold: 1800 },
+    {
+      kind: 'scene', bg: 'hallway', t: 0.85, me: 'concerned', place: '복도 · 시간이 흐른 뒤',
+      right: [{ who: picked, face: pf.calm }],
+      lines: [
+        L(null, fill('해명이 되었더라도, {이름}이(가) 신뢰를 되찾는 데에는 시간이 걸릴 수 있다.')),
+        L(picked, '……이미 소문이 퍼진 뒤였어.', pf.sad),
+        L('me', '내가 확인도 하기 전에 짚었어. 사실을 보고 말했어야 했어.', 'concerned'),
+      ],
+    },
+    {
+      kind: 'scene', bg: 'counseling', t: 0.7, me: 'determined', place: '상담실',
+      right: [{ who: 'teacher', face: 'serious' }],
+      lines: [
+        L('teacher', '누군가를 가리키려면 눈으로 본 것과 확인된 증거가 있어야 해요.', 'serious'),
+        L('teacher', '느낌이나 소문만으로 사람을 지목하면, 또 다른 피해가 생길 수 있어요.', 'worried'),
+        L('me', '네. 이번엔 확인된 사실만 가지고 다시 살펴보겠습니다.', 'determined'),
+      ],
+    },
+    {
+      kind: 'card',
+      text: '확인되지 않은 사실로\n사람을 가리키면,\n또 다른 피해자가 생길 수 있습니다.',
+      sub: '다시 한 번 시간을 거슬러 갈 수 있습니다. 이야기 속 학교와 인물은 모두 가상입니다.',
+      hold: 5000,
+    },
+  ];
+}
+
+/** 엔딩 4: 전달한 손 — 수사관이 사진을 공유한 뒤 */
+function participant(): Shot[] {
+  return [
+    recoveryShot('participant', [{ who: 'jiwoo', face: 'guarded' }], 'classroom', same),
+    { kind: 'card', text: '그날 이후', hold: 1800 },
+    {
+      kind: 'scene', bg: 'classroom', t: 0.6, me: 'flustered', place: '교실 · 그날 이후',
+      right: [{ who: 'jiwoo', face: 'teary' }],
+      lines: [
+        L(null, '사진은 이미 여러 대화방으로 퍼진 뒤였다. 지워도, 어딘가에 남아 있을 수 있다.'),
+        L(null, '"보기만 했다"고 해도, 전달했다면 그 일의 일부가 될 수 있다.'),
+        L('jiwoo', '……누가 또 봤을까 생각하면, 학교에 오는 게 무서워.', 'teary'),
+      ],
+    },
+    {
+      kind: 'scene', bg: 'hallway', t: 0.65, me: null, place: '복도 · 며칠 뒤',
+      right: [{ who: 'daeun', face: 'awkward' }, { who: 'taeo', face: 'worried' }],
+      lines: [
+        L(null, '사진을 전달한 아이들도 불안해지기 시작한다. 한 번의 클릭은 기록으로 남을 수 있다.'),
+        L('daeun', '그냥… 다들 보내니까 나도 보낸 건데.', 'awkward'),
+        L('taeo', '이거… 우리도 조사받는 거 아냐?', 'worried'),
+      ],
+    },
+    { kind: 'card', text: '1년 뒤', hold: 1800 },
+    {
+      kind: 'scene', bg: 'hallway', t: 0.9, me: null, place: '복도 · 1년 뒤', faded: true,
+      right: [{ who: 'jiwoo', face: 'tired' }],
+      lines: [
+        L(null, '사진이 다시 나타날까 하는 불안은 오래갈 수 있다.'),
+        L(null, '그래도 증거를 지켜 주고 도와준 사람을 기억하며, 천천히 회복해 나갈 수도 있다.'),
+      ],
+    },
+    {
+      kind: 'scene', bg: 'counseling', t: 0.7, me: 'determined', place: '상담실',
+      right: [{ who: 'teacher', face: 'serious' }],
+      lines: [
+        L('teacher', '증거를 남기는 일과 퍼뜨리는 일은 전혀 달라요.', 'serious'),
+        L('teacher', '이런 사진을 보게 되면 전달하지 말고, 화면을 캡처해 보관한 뒤 어른에게 알려요.', 'encourage'),
+        L('me', '네. 이번에는 전달하지 않고, 증거를 지켜서 알리겠습니다.', 'determined'),
+      ],
+    },
+    {
+      kind: 'card',
+      text: '사진을 보게 되면\n전달하지 않고, 캡처해서 보관한 뒤\n믿을 수 있는 어른에게 알립니다.',
+      sub: '학교폭력 신고·상담 117 · 다시 한 번 시간을 거슬러 갈 수 있습니다. 이야기 속 학교와 인물은 모두 가상입니다.',
+      hold: 6000,
     },
   ];
 }
 
 export function filmFor(ending: EndingId, picked: CharId, name: string): Shot[] {
-  return ending === 'resolved' ? RESOLVED : fromRecovery(ending, picked, name);
+  switch (ending) {
+    case 'resolved':
+      return RESOLVED;
+    case 'insufficient':
+      return insufficient();
+    case 'misidentified':
+      return misidentified(picked, name);
+    case 'participant':
+      return participant();
+  }
 }
