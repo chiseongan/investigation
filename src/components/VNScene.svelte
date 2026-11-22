@@ -302,9 +302,9 @@
 
 <style>
   .vn {
-    --boxh: clamp(230px, 34dvh, 300px);
+    --boxh: clamp(230px, calc(var(--app-h, 100dvh) * 0.34), 300px);
     /* 인물 그림이 무대 높이를 넘지 않게: 화면 높이 - 위 표시줄 - 대화창 - 이름표 */
-    --figh: calc(100dvh - 64px - var(--boxh) - 52px);
+    --figh: calc(var(--app-h, 100dvh) - 64px - var(--boxh) - 52px);
     flex: 1;
     min-height: 0;
     display: flex;
@@ -411,7 +411,7 @@
      그림은 인물 전체 높이의 약 2/3만 담겨 있다. 무대 높이만큼의 전신을 기준으로 크기를 잡는다. */
   .who.bust {
     flex: 0 0 auto;
-    --fh: calc(100dvh - 64px - var(--boxh));
+    --fh: calc(var(--app-h, 100dvh) - 64px - var(--boxh));
     /* 키는 무대 높이와 폭 중 작은 쪽에 맞춘다: 폭이 좁아도 '나'와 상대가 겹치지 않게 */
     --ih: min(calc(var(--fh) * 0.667), 62cqw);
     /* 모든 인물이 같은 폭의 칸에 가운데 맞춰 서므로, 인물이 달라도 서는 자리가 같다 */

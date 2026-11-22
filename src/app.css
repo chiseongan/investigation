@@ -13,11 +13,33 @@ html,
 body {
   margin: 0;
   height: 100%;
-  background: #dfe4ec;
+  background: #1f2a44;
   font-family: Pretendard, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', system-ui, sans-serif;
   color: #1d2438;
   -webkit-text-size-adjust: 100%;
   overscroll-behavior: none;
+}
+/* 화면 전체를 고정해 페이지 자체가 스크롤되지 않게 한다 (주소창 때문에 아래에 흰 여백이 생기던 문제) */
+html {
+  overflow: hidden;
+}
+body {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  overflow: hidden;
+}
+#app {
+  height: var(--app-h, 100%);
+}
+/* 넓은 화면: 양옆은 어두운 바탕, 게임 화면은 그림자로 띄운다 */
+@media (min-width: 600px) {
+  body {
+    background: radial-gradient(circle at 50% 30%, #2a3757, #10172a 70%);
+  }
+  #app > .app {
+    box-shadow: 0 0 60px rgba(0, 0, 0, 0.55);
+  }
 }
 button {
   font-family: inherit;

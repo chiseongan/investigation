@@ -49,8 +49,8 @@
 
 <style>
   .intro {
-    --boxh: clamp(230px, 34dvh, 300px);
-    --figh: calc(100dvh - 64px - var(--boxh) - 52px);
+    --boxh: clamp(230px, calc(var(--app-h, 100dvh) * 0.34), 300px);
+    --figh: calc(var(--app-h, 100dvh) - 64px - var(--boxh) - 52px);
     flex: 1;
     min-height: 0;
     display: flex;
@@ -101,7 +101,7 @@
      그림은 인물 전체 높이의 약 2/3만 담겨 있다. 무대 높이만큼의 전신을 기준으로 크기를 잡는다. */
   .who.bust {
     flex: 0 0 auto;
-    --fh: calc(100dvh - 64px - var(--boxh));
+    --fh: calc(var(--app-h, 100dvh) - 64px - var(--boxh));
     --ih: calc(var(--fh) * 0.667);
     /* 그림 아래 7%는 무대 밖으로 내려 가린다. 무대 아래쪽 여백(14px)만큼도 더 내린다 */
     margin-bottom: calc(var(--ih) * -0.07 - 14px);

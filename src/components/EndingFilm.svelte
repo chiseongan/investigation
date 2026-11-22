@@ -181,7 +181,7 @@
 
 <style>
   .film {
-    --boxh: clamp(230px, 34dvh, 300px);
+    --boxh: clamp(230px, calc(var(--app-h, 100dvh) * 0.34), 300px);
     position: relative;
     flex: 1;
     min-height: 0;
@@ -407,7 +407,7 @@
   .who.bust {
     position: relative;
     flex: 0 0 auto;
-    --fh: calc(100dvh - 64px - var(--boxh));
+    --fh: calc(var(--app-h, 100dvh) - 64px - var(--boxh));
     --ih: min(calc(var(--fh) * 0.667), 62cqw);
     --slot: calc(var(--ih) * 0.72);
     width: var(--slot);

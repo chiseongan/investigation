@@ -326,9 +326,9 @@
 <style>
   .app {
     position: relative;
-    width: 100%;
-    max-width: 430px;
-    height: 100dvh;
+    /* 휴대폰은 화면 폭 그대로, 태블릿·노트북은 높이에 비례한 세로 화면(최대 760px)을 가운데에 놓는다 */
+    width: min(100%, max(430px, calc(var(--app-h, 100dvh) * 0.62)), 760px);
+    height: var(--app-h, 100dvh);
     margin: 0 auto;
     display: flex;
     flex-direction: column;

@@ -81,7 +81,7 @@
 
 <style>
   .vn {
-    --boxh: clamp(250px, 38dvh, 330px);
+    --boxh: clamp(250px, calc(var(--app-h, 100dvh) * 0.38), 330px);
     flex: 1;
     min-height: 0;
     display: flex;
@@ -134,7 +134,7 @@
   }
   .who.bust {
     flex: 0 0 auto;
-    --fh: calc(100dvh - 64px - var(--boxh));
+    --fh: calc(var(--app-h, 100dvh) - 64px - var(--boxh));
     --ih: min(calc(var(--fh) * 0.667), 62cqw);
     width: calc(var(--ih) * 0.72);
     margin-bottom: calc(var(--ih) * -0.07 - 14px);
