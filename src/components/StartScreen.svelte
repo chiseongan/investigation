@@ -1,6 +1,6 @@
 <script lang="ts">
   // 시작 화면 + 수사관 임명(브리핑, 규칙 1장)
-  import { DAY_SECONDS } from '../data/config';
+  import { DAY_SECONDS, EXPLORE_ENABLED } from '../data/config';
   import type { Mode } from '../lib/gameState';
   import { portrait } from '../assets/portraits';
   import VNBackground from './VNBackground.svelte';
@@ -80,21 +80,30 @@
       <div class="rules paper">
         <h3>수사 규칙</h3>
         <ul>
-          <li>하루는 등교, 쉬는 시간, 점심처럼 아침부터 차례로 흘러가요. 탐색형은 앞 시간대를 관찰해야 다음이 열리고, 대화형은 자동으로 이어집니다.</li>
-          <li>탐색형은 하루가 약 <b>{Math.round(DAY_SECONDS / 60)}분</b>이고, 종이 울리면 하루가 끝납니다.</li>
-          <li>탐색형은 바닥을 탭해 이동하고 인물 옆에서, 대화형은 시간이 흐르며 마주치는 인물들과 차례로 대화합니다. 이야기와 단서는 같아요.</li>
+          {#if EXPLORE_ENABLED}
+            <li>하루는 등교, 쉬는 시간, 점심처럼 아침부터 차례로 흘러가요. 탐색형은 앞 시간대를 관찰해야 다음이 열리고, 대화형은 자동으로 이어집니다.</li>
+            <li>탐색형은 하루가 약 <b>{Math.round(DAY_SECONDS / 60)}분</b>이고, 종이 울리면 하루가 끝납니다.</li>
+            <li>탐색형은 바닥을 탭해 이동하고 인물 옆에서, 대화형은 시간이 흐르며 마주치는 인물들과 차례로 대화합니다. 이야기와 단서는 같아요.</li>
+          {:else}
+            <li>하루는 등교, 쉬는 시간, 점심처럼 아침부터 차례로 흘러가요. 시간이 흐르며 마주치는 인물들과 차례로 대화합니다.</li>
+            <li>대화가 끝나면 수사관이 느낀 점이 나오고, 수첩에 적은 단서는 하루가 끝날 때 다시 확인할 수 있어요.</li>
+          {/if}
           <li>어떻게 말을 걸지는 <b>스스로 판단</b>하세요. 표시나 점수는 없습니다. 사람들은 당신의 말과 태도에 따라 반응할 거예요.</li>
           <li>거칠어 보여도 장난일 수 있고, 평범해 보여도 신호일 수 있어요. 신중하게 판단하세요.</li>
         </ul>
       </div>
     </div>
     <div class="actions">
-      <button class="btn primary" onclick={() => onBegin('explore')}>
-        탐색형으로 시작<small>교실을 걸어 다니며 인물에게 다가가요</small>
-      </button>
-      <button class="btn primary alt" onclick={() => onBegin('novel')}>
-        대화형으로 시작<small>시간이 흐르며 만나는 사람들과 차례로 대화해요</small>
-      </button>
+      {#if EXPLORE_ENABLED}
+        <button class="btn primary" onclick={() => onBegin('explore')}>
+          탐색형으로 시작<small>교실을 걸어 다니며 인물에게 다가가요</small>
+        </button>
+        <button class="btn primary alt" onclick={() => onBegin('novel')}>
+          대화형으로 시작<small>시간이 흐르며 만나는 사람들과 차례로 대화해요</small>
+        </button>
+      {:else}
+        <button class="btn primary" onclick={() => onBegin('novel')}>수사 시작</button>
+      {/if}
     </div>
   {/if}
 </main>

@@ -1,5 +1,8 @@
 // 게임 설정 — 교사가 바꿀 수 있는 값들
 
+// 탐색형(쿼터뷰 방을 걸어 다니는 방식) 선택지를 보여 줄지. 지금은 대화형만 연다. true 로 바꾸면 시작 화면에 다시 나온다.
+export const EXPLORE_ENABLED = false;
+
 export const DAY_SECONDS = 300; // 하루 시간(초). 약 5분
 export const TRUST_MIN = -3;
 export const TRUST_MAX = 5;

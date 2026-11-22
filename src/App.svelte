@@ -10,7 +10,7 @@
   import DayEnd from './components/DayEnd.svelte';
   import DayEndNovel from './components/DayEndNovel.svelte';
   import Notebook from './components/Notebook.svelte';
-  import { DAY_SECONDS } from './data/config';
+  import { DAY_SECONDS, EXPLORE_ENABLED } from './data/config';
   import { DAYS, ROOMS, SCENES, SLOT_LABEL, SLOT_ORDER, availableSlots, type SlotId } from './data/rooms';
   import { get } from 'svelte/store';
   import { DayClock } from './lib/clock';
@@ -26,7 +26,9 @@
   // 주소에 ?ending=1 처럼 붙이면 엔딩 연출만 바로 볼 수 있다 (확인용, 저장 기록은 건드리지 않는다)
   const preview = typeof location !== 'undefined' ? endingPreview(location.search) : null;
   if (preview) game.set(preview.state);
-  let saved = $state(preview ? null : readSave());
+  // 탐색형이 닫혀 있을 때, 탐색형으로 저장된 진행은 이어하지 않는다
+  const firstSave = preview ? null : readSave();
+  let saved = $state(firstSave && (EXPLORE_ENABLED || firstSave.game.mode === 'novel') ? firstSave : null);
   onMount(() => {
     if (!preview) return startAutosave();
   });
