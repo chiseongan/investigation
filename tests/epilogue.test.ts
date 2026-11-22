@@ -21,6 +21,11 @@ describe('엔딩 영상 대본', () => {
           expect(s.text.trim().length).toBeGreaterThan(0);
           continue;
         }
+        if (s.kind === 'ledger') {
+          expect(s.items.length).toBeGreaterThan(0);
+          for (const it of s.items) expect(it.text.trim().length).toBeGreaterThan(0);
+          continue;
+        }
         expect(ROOMS).toContain(s.bg);
         expect(s.t).toBeGreaterThanOrEqual(0);
         expect(s.t).toBeLessThanOrEqual(1);
@@ -44,6 +49,9 @@ describe('엔딩 영상 대본', () => {
     const after = shots.slice(q + 1);
     expect(before.some((s) => s.kind === 'scene' && s.right.some((f) => f.who === 'jiwoo'))).toBe(true);
     expect(after.some((s) => s.kind === 'scene' && !!s.tag)).toBe(true);
-    expect(after.every((s) => s.kind === 'card' || s.right.every((f) => f.who === 'minjun'))).toBe(true);
+    expect(after.every((s) => s.kind !== 'scene' || s.right.every((f) => f.who === 'minjun'))).toBe(true);
+    // 가해 학생이 받을 수 있는 법적 책임(학교 조치, 소년법, 형사, 민사)이 영상에 나온다
+    const ledger = after.find((s) => s.kind === 'ledger');
+    expect(ledger && ledger.kind === 'ledger' && ledger.items.map((i) => i.no)).toEqual(expect.arrayContaining(['학교', '소년법', '형사', '민사']));
   });
 });

@@ -8,6 +8,7 @@
 import type { CharId } from './characters';
 import type { EndingId } from './endings';
 import { RECOVERY } from './endings';
+import { LEGAL, LEGAL_NOTE } from './penalties';
 
 export interface FilmLine {
   who: CharId | null;
@@ -34,6 +35,13 @@ export type Shot =
       sub?: string;
       /** 화면에 머무는 시간(ms). 눌러서 넘길 수도 있다 */
       hold?: number;
+    }
+  | {
+      /** 조치·책임 목록. 항목이 하나씩 나타난다 */
+      kind: 'ledger';
+      title: string;
+      items: { no: string; name: string; text: string; level: 1 | 2 | 3 }[];
+      note?: string;
     }
   | {
       kind: 'scene';
@@ -104,6 +112,15 @@ const RESOLVED: Shot[] = [
       L(null, '하지만 장난이라는 말은, 지우가 받은 상처를 지워 주지 못한다.'),
       L(null, '조치 기록이 남고, 민준에게는 이제 "학교폭력 가해" 꼬리표가 따라붙을 수 있다.'),
     ],
+  },
+  {
+    kind: 'ledger',
+    title: '학교 안의 조치와 법적 책임',
+    items: [
+      { no: '학교', name: '학교폭력 조치', text: '서면 사과, 접촉 금지, 봉사, 특별교육, 출석정지, 학급교체, 전학 등을 사안의 정도에 따라 받을 수 있다.', level: 2 },
+      ...LEGAL.map((c) => ({ no: c.no, name: c.name, text: c.desc, level: c.level })),
+    ],
+    note: LEGAL_NOTE,
   },
   {
     kind: 'scene', bg: 'hallway', t: 0.9, me: null, place: '복도 · 얼마 뒤', tag: '학교폭력 가해', tagFrom: 0,

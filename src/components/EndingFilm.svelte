@@ -43,7 +43,7 @@
       for (const f of s.right) warm(f.who);
       warm('me');
       applyFace(0);
-    } else {
+    } else if (s.kind === 'card') {
       clearTimeout(timer);
       timer = setTimeout(() => go(n + 1), reduce() ? Math.min(s.hold ?? 3000, 1500) : (s.hold ?? 3000));
     }
@@ -73,7 +73,7 @@
 
   function next() {
     if (moving) return;
-    if (shot?.kind === 'card') return go(si + 1);
+    if (shot?.kind === 'card' || shot?.kind === 'ledger') return go(si + 1);
     if (li + 1 < lines.length) {
       li++;
       applyFace(li);
@@ -111,6 +111,22 @@
         {#if shot.sub}<p class="sub">{shot.sub}</p>{/if}
       {/key}
       <button class="skip" onclick={next}>넘기기</button>
+    </div>
+  {:else if shot?.kind === 'ledger'}
+    <div class="ledger">
+      <h3 class="ltitle">{shot.title}</h3>
+      <ul class="litems">
+        {#each shot.items as it, k}
+          <li style:--d="{0.5 + k * 0.7}s">
+            <span class="lno">{it.no}</span>
+            <strong>{it.name}</strong>
+            <span class="ldots" aria-hidden="true">{#each Array(3) as _, d}<i class:on={d < it.level}></i>{/each}</span>
+            <p>{it.text}</p>
+          </li>
+        {/each}
+      </ul>
+      {#if shot.note}<p class="lnote" style:--d="{0.5 + shot.items.length * 0.7}s">{shot.note}</p>{/if}
+      <button class="btn lnext" style:--d="{0.8 + shot.items.length * 0.7}s" onclick={next}>다음</button>
     </div>
   {:else if shot?.kind === 'scene'}
     <div class="stage" class:faded={shot.faded}>
@@ -201,6 +217,82 @@
     line-height: 1.5;
     color: #9aa8c6;
     animation: show 1s ease-out 1.2s both;
+  }
+  /* 조치·책임 목록 */
+  .ledger {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: calc(26px + env(safe-area-inset-top)) 18px calc(20px + env(safe-area-inset-bottom));
+    background: #0e1424;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .ltitle {
+    margin: 0 0 4px;
+    font-size: 20px;
+    color: #fff;
+    animation: show 0.6s ease-out both;
+  }
+  .litems {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .litems li {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 4px 10px;
+    padding: 12px 14px;
+    border-left: 5px solid #b23a48;
+    border-radius: 12px;
+    background: #1b2440;
+    animation: rise 0.6s ease-out var(--d) both;
+  }
+  .litems .lno {
+    font-size: 12px;
+    font-weight: 800;
+    color: #e8a33d;
+  }
+  .litems p {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.55;
+    color: #dbe3f5;
+    word-break: keep-all;
+  }
+  .ldots {
+    display: flex;
+    gap: 3px;
+  }
+  .ldots i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #44507a;
+  }
+  .ldots i.on {
+    background: #b23a48;
+  }
+  .lnote {
+    margin: 4px 0 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #9aa8c6;
+    animation: show 0.6s ease-out var(--d) both;
+  }
+  .lnext {
+    flex: none;
+    margin-top: auto;
+    animation: show 0.6s ease-out var(--d) both;
   }
   .skip {
     position: absolute;
@@ -468,6 +560,10 @@
     }
   }
   @media (prefers-reduced-motion: reduce) {
+    .ltitle,
+    .litems li,
+    .lnote,
+    .lnext,
     .big,
     .sub,
     .place,

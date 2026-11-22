@@ -5,9 +5,9 @@
   import { ENDINGS, TIMELINES } from '../data/endings';
   import { filmFor } from '../data/epilogue';
   import EndingFilm from './EndingFilm.svelte';
-  import { cardsFor, STATS } from '../data/penalties';
+  import EndingResult from './EndingResult.svelte';
+  import { cardsFor, legalFor, STATS } from '../data/penalties';
   import { SHOW_UNVERIFIED_STATS } from '../data/config';
-  import { DAYS } from '../data/rooms';
   import { buildCode, formUrl, formConfigured } from '../lib/result';
   import type { GameState } from '../lib/gameState';
 
@@ -21,7 +21,6 @@
   type Step = 'result' | 'penalty' | 'timeline' | 'film' | 'exit';
   // svelte-ignore state_referenced_locally
   let step: Step = $state(startAt);
-  let rewinding = $state(false);
   let copied = $state(false);
 
   const verdict = $derived(gs.verdict!);
@@ -30,6 +29,7 @@
   const name = $derived(CHARACTERS[report.picked].name);
   const fill = (s: string) => s.replaceAll('{이름}', name);
   const penalty = $derived(cardsFor(verdict.ending));
+  const legal = $derived(legalFor(verdict.ending));
   const stats = $derived(STATS.filter((s) => s.verified || SHOW_UNVERIFIED_STATS));
   const timelines = $derived(TIMELINES[verdict.ending]);
   const shots = $derived(filmFor(verdict.ending, report.picked, name));
@@ -54,38 +54,11 @@
 
 {#if step === 'film'}
   <EndingFilm {shots} onDone={next} />
+{:else if step === 'result'}
+  <EndingResult {gs} {name} onNext={next} {onRewind} />
 {:else}
 <main class="screen {def.tone}">
-  {#if step === 'result'}
-    <p class="eyebrow">엔딩 {def.no} / 4</p>
-    <h2>{def.title}</h2>
-    {#each def.summary as p}<p class="body">{fill(p)}</p>{/each}
-
-    {#if verdict.reasons.length}
-      <div class="box">
-        <h3>이렇게 되었어요</h3>
-        <ul>{#each verdict.reasons as r}<li>{fill(r)}</li>{/each}</ul>
-      </div>
-    {/if}
-    {#if gs.shared && verdict.ending !== 'participant'}
-      <div class="box warn"><p>수사 중 사진 공유 버튼을 누른 기록이 남아 있어요.</p></div>
-    {/if}
-
-    <div class="actions">
-      <button class="btn primary" onclick={next}>다음</button>
-      {#if verdict.ending !== 'resolved'}
-        <button class="btn ghost" onclick={() => (rewinding = !rewinding)}>{rewinding ? '되감기 닫기' : '시간을 되감는다'}</button>
-      {/if}
-      {#if rewinding}
-        <div class="days">
-          <p>어느 날 아침으로 돌아갈까요? 그 전에 모은 단서는 그대로 남아요.</p>
-          {#each DAYS as d, i}
-            {#if gs.snapshots[i]}<button class="btn day" onclick={() => onRewind(i)}>{d.label} 아침</button>{/if}
-          {/each}
-        </div>
-      {/if}
-    </div>
-  {:else if step === 'penalty'}
+  {#if step === 'penalty'}
     <p class="eyebrow">그 뒤에 일어날 수 있는 일</p>
     <h2>{penalty.heading}</h2>
     <ul class="pcards">
@@ -99,6 +72,20 @@
       {/each}
     </ul>
     <p class="fine">실제 조치는 학교폭력대책심의위원회가 사안의 정도와 반성·화해 노력 등을 살펴 결정해요. 기준은 바뀔 수 있어요.</p>
+    {#if legal}
+      <h3 class="legalhead">{legal.heading}</h3>
+      <ul class="pcards legal">
+        {#each legal.cards as c (c.id)}
+          <li>
+            <span class="no">{c.no}</span>
+            <strong>{c.name}</strong>
+            <span class="dots" aria-hidden="true">{#each Array(3) as _, i}<i class:on={i < c.level}></i>{/each}</span>
+            <p>{c.desc}</p>
+          </li>
+        {/each}
+      </ul>
+      <p class="fine">{legal.note}</p>
+    {/if}
     {#each stats as s}<p class="fine">{s.text}</p>{/each}
     <div class="actions"><button class="btn primary" onclick={next}>다음</button></div>
   {:else if step === 'timeline'}
@@ -246,21 +233,6 @@
     margin-top: 8px;
     text-decoration: none;
   }
-  .days {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .days p {
-    margin: 0;
-    font-size: 13px;
-    color: #5b6781;
-  }
-  .day {
-    background: #e4edff;
-    color: #2a56b3;
-    min-height: 48px;
-  }
   .pcards {
     list-style: none;
     margin: 0;
@@ -278,6 +250,14 @@
     border-left: 5px solid #b23a48;
     border-radius: 12px;
     background: #fff;
+  }
+  .legalhead {
+    margin: 18px 0 8px;
+    font-size: 15px;
+    color: #1f2a44;
+  }
+  .pcards.legal li {
+    border-left-color: #1f2a44;
   }
   .pcards .no {
     font-size: 12px;
