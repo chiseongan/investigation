@@ -1,7 +1,10 @@
 <script lang="ts">
-  // 엔딩: 결과 → 조치 카드 → 10년 후 → 회복 장면 → 게임에서 나오기
+  // 엔딩: 결과 → 조치 카드 → (10년 후 글) → 엔딩 영상(애니메이션 장면) → 게임에서 나오기
+  // 엔딩 1(멈춘 괴롭힘)은 영상 안에서 지우의 회복과 민준의 이후까지 보여 주므로 10년 후 글 단계는 건너뛴다.
   import { CHARACTERS } from '../data/characters';
-  import { ENDINGS, RECOVERY, TIMELINES } from '../data/endings';
+  import { ENDINGS, TIMELINES } from '../data/endings';
+  import { filmFor } from '../data/epilogue';
+  import EndingFilm from './EndingFilm.svelte';
   import { cardsFor, STATS } from '../data/penalties';
   import { SHOW_UNVERIFIED_STATS } from '../data/config';
   import { DAYS } from '../data/rooms';
@@ -14,7 +17,7 @@
     onRestart,
   }: { gs: GameState; onRewind: (dayIndex: number) => void; onRestart: () => void } = $props();
 
-  type Step = 'result' | 'penalty' | 'timeline' | 'recovery' | 'exit';
+  type Step = 'result' | 'penalty' | 'timeline' | 'film' | 'exit';
   let step: Step = $state('result');
   let rewinding = $state(false);
   let copied = $state(false);
@@ -27,19 +30,13 @@
   const penalty = $derived(cardsFor(verdict.ending));
   const stats = $derived(STATS.filter((s) => s.verified || SHOW_UNVERIFIED_STATS));
   const timelines = $derived(TIMELINES[verdict.ending]);
-  const recovery = $derived(RECOVERY[verdict.ending]);
-
-  // 회복 장면
-  let beatNo = $state(0);
-  let reply: number | null = $state(null);
-  const beatsShown = $derived(recovery.beats.slice(0, beatNo + 1));
-  const atLast = $derived(beatNo >= recovery.beats.length - 1);
+  const shots = $derived(filmFor(verdict.ending, report.picked, name));
 
   const input = $derived({ ending: verdict.ending, verdict, shared: gs.shared, picked: report.picked });
   const code = $derived(buildCode(input));
   const link = $derived(formUrl(input));
 
-  const order: Step[] = ['result', 'penalty', 'timeline', 'recovery', 'exit'];
+  const order = $derived<Step[]>(verdict.ending === 'resolved' ? ['result', 'penalty', 'film', 'exit'] : ['result', 'penalty', 'timeline', 'film', 'exit']);
   function next() {
     step = order[order.indexOf(step) + 1];
   }
@@ -51,9 +48,11 @@
       copied = false;
     }
   }
-  const speakerName = (id: string | null) => (id ? CHARACTERS[id as keyof typeof CHARACTERS].name : '');
 </script>
 
+{#if step === 'film'}
+  <EndingFilm {shots} onDone={next} />
+{:else}
 <main class="screen {def.tone}">
   {#if step === 'result'}
     <p class="eyebrow">엔딩 {def.no} / 4</p>
@@ -115,36 +114,6 @@
       </section>
     {/each}
     <div class="actions"><button class="btn primary" onclick={next}>다음</button></div>
-  {:else if step === 'recovery'}
-    <p class="eyebrow">회복</p>
-    <h2>마지막 장면</h2>
-    <div class="beats">
-      {#each beatsShown as b, i (i)}
-        <p class="beat" class:narr={!b.speaker}>
-          {#if b.speaker}<b>{speakerName(b.speaker)}</b>{/if}
-          {fill(b.text)}
-        </p>
-      {/each}
-      {#if reply !== null}
-        {#each recovery.choices[reply].reply as b}
-          <p class="beat" class:narr={!b.speaker}>
-            {#if b.speaker}<b>{speakerName(b.speaker)}</b>{/if}
-            {fill(b.text)}
-          </p>
-        {/each}
-      {/if}
-    </div>
-    <div class="actions">
-      {#if !atLast}
-        <button class="btn primary" onclick={() => beatNo++}>다음</button>
-      {:else if reply === null}
-        {#each recovery.choices as c, i}
-          <button class="btn choice" onclick={() => (reply = i)}>{fill(c.text)}</button>
-        {/each}
-      {:else}
-        <button class="btn primary" onclick={next}>다음</button>
-      {/if}
-    </div>
   {:else}
     <p class="eyebrow">게임에서 나오기</p>
     <h2>수고했어요</h2>
@@ -174,6 +143,7 @@
     </div>
   {/if}
 </main>
+{/if}
 
 <style>
   .screen {
@@ -267,15 +237,6 @@
     color: #1f2a44;
     border: 2px solid #cfd7e5;
   }
-  .choice {
-    background: #fff;
-    color: #1f2a44;
-    border: 2px solid #3b6fd8;
-    text-align: left;
-    padding: 12px 14px;
-    line-height: 1.45;
-    font-size: 15px;
-  }
   .linkbtn {
     display: flex;
     align-items: center;
@@ -366,30 +327,6 @@
     font-size: 14px;
     line-height: 1.5;
     color: #2d3858;
-  }
-  .beats {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .beat {
-    margin: 0;
-    padding: 10px 12px;
-    border-radius: 12px;
-    background: #fff;
-    font-size: 15px;
-    line-height: 1.55;
-    color: #1f2a44;
-    animation: rise 0.3s ease-out;
-  }
-  .beat b {
-    margin-right: 6px;
-    color: #3b6fd8;
-  }
-  .beat.narr {
-    background: transparent;
-    color: #4a5670;
-    font-style: italic;
   }
   .code {
     margin: 0;
