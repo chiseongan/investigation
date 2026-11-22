@@ -20,10 +20,16 @@
   import { clearSave, readSave, startAutosave } from './lib/save';
   import { importSessions } from './lib/session';
   import { onMount } from 'svelte';
+  import { endingPreview } from './lib/preview';
 
   // 같은 탭에서 새로고침했다면 이어서 할 수 있다 (sessionStorage, 탭을 닫으면 사라짐)
-  let saved = $state(readSave());
-  onMount(() => startAutosave());
+  // 주소에 ?ending=1 처럼 붙이면 엔딩 연출만 바로 볼 수 있다 (확인용, 저장 기록은 건드리지 않는다)
+  const preview = typeof location !== 'undefined' ? endingPreview(location.search) : null;
+  if (preview) game.set(preview.state);
+  let saved = $state(preview ? null : readSave());
+  onMount(() => {
+    if (!preview) return startAutosave();
+  });
 
   function resume() {
     const s = saved;
@@ -246,7 +252,7 @@
   {:else if $game.phase === 'report'}
     <Report gs={$game} onSubmit={(r) => submitReport(r)} />
   {:else if $game.phase === 'ending' && $game.verdict}
-    <Ending gs={$game} onRewind={(d) => withCurtain(() => rewind(d), dayCaption(d))} onRestart={restart} />
+    <Ending gs={$game} startAt={preview?.at ?? 'result'} onRewind={(d) => withCurtain(() => rewind(d), dayCaption(d))} onRestart={restart} />
   {:else}
     <Hud
       dayNo={$game.dayIndex + 1}

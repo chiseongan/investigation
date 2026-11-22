@@ -13,12 +13,14 @@
 
   let {
     gs,
+    startAt = 'result',
     onRewind,
     onRestart,
-  }: { gs: GameState; onRewind: (dayIndex: number) => void; onRestart: () => void } = $props();
+  }: { gs: GameState; startAt?: Step; onRewind: (dayIndex: number) => void; onRestart: () => void } = $props();
 
   type Step = 'result' | 'penalty' | 'timeline' | 'film' | 'exit';
-  let step: Step = $state('result');
+  // svelte-ignore state_referenced_locally
+  let step: Step = $state(startAt);
   let rewinding = $state(false);
   let copied = $state(false);
 

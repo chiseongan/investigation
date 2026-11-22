@@ -51,3 +51,9 @@ node scripts/make-qr.mjs https://내주소/   # 다른 주소
 ## 수업 전 확인
 - `src/data/penalties.ts` 의 조치 목록과 문구를 최신 법령·교육부 기준과 맞춰 보세요. 근거를 확인하지 못한 통계는 `verified: false` 이며 화면에 나오지 않습니다.
 - 성능 점검 방법은 [docs/PERFORMANCE.md](docs/PERFORMANCE.md) 를 보세요.
+
+## 엔딩 연출만 바로 보기
+주소 끝에 `?ending=번호`를 붙이면 처음부터 플레이하지 않고 엔딩만 볼 수 있습니다. 저장 기록은 건드리지 않습니다.
+- `?ending=1` 결과 화면부터 / `?ending=1&at=film` 엔딩 영상 컷부터 바로
+- 번호: 1 멈춘 괴롭힘, 2 늦어진 도움, 3 엉뚱한 지목, 4 전달한 손
+- 엔딩 3에서 지목된 학생 바꾸기: `?ending=3&pick=daeun` (taeo, seoyeon, doyun, daeun)
