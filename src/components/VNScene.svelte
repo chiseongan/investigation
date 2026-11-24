@@ -549,19 +549,25 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 8px;
+    align-items: center;
+    gap: 10px;
     overflow-y: auto;
     overscroll-behavior: contain;
     animation: rise 0.25s ease-out;
   }
+  /* 모든 선택지는 같은 폭·같은 높이(가장 긴 선택지가 두 줄에 들어가는 크기)로 가운데에 놓는다 */
   .choice {
     flex: none;
-    min-height: 44px;
-    padding: 8px 14px;
-    font-size: 15px;
+    width: min(100%, 26em);
+    min-height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 18px;
+    font-size: 16px;
     overflow-wrap: anywhere;
     word-break: keep-all;
-    text-align: left;
+    text-align: center;
     background: rgba(255, 255, 255, 0.96);
     color: #1d2438;
     border: 2px solid #3b6fd8;

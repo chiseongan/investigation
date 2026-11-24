@@ -448,17 +448,23 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 8px;
+    align-items: center;
+    gap: 10px;
     overflow-y: auto;
     animation: show 0.25s ease-out both;
   }
+  /* 모든 선택지는 같은 폭·같은 높이로 가운데에 놓는다 */
   .choice {
     flex: none;
-    min-height: 44px;
-    padding: 8px 14px;
+    width: min(100%, 26em);
+    min-height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 18px;
     font: inherit;
-    font-size: 15px;
-    text-align: left;
+    font-size: 16px;
+    text-align: center;
     background: rgba(255, 255, 255, 0.96);
     color: #1d2438;
     border: 2px solid #3b6fd8;
