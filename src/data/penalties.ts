@@ -90,9 +90,36 @@ export const LEGAL: PenaltyCard[] = [
   },
 ];
 
+/** 사진을 전달한 경우(엔딩 4)의 법적 책임. 직접 올리지 않고 전달만 했어도 책임이 생길 수 있다 */
+export const LEGAL_FORWARD: PenaltyCard[] = [
+  {
+    id: 'f1',
+    no: '소년법',
+    name: '보호처분',
+    desc: '만 14세 미만(촉법소년)이라도 사안에 따라 법원 소년부의 보호처분 대상이 될 수 있다. 사진을 전달만 했다는 이유로 책임이 없어지는 것은 아니다.',
+    level: 3,
+  },
+  {
+    id: 'f2',
+    no: '형사',
+    name: '형사처벌',
+    desc: '만 14세 이상이면 사진을 퍼뜨린 행위가 명예훼손·모욕, 정보통신망 관련 법 위반 등으로 처벌 대상이 될 수 있다. 전달한 사람도 조사받을 수 있다.',
+    level: 3,
+  },
+  {
+    id: 'f3',
+    no: '민사',
+    name: '손해배상',
+    desc: '사진이 퍼져 피해 학생이 입은 정신적 피해에 대해 위자료를 물어 줘야 할 수 있고, 보호자가 함께 책임을 질 수 있다.',
+    level: 2,
+  },
+];
+
 export const LEGAL_NOTE = '실제 처분은 사안의 정도, 나이, 법 개정에 따라 달라질 수 있어요. 이 이야기의 학교와 인물은 모두 가상이에요.';
 
-/** 법적 책임 카드가 필요한 엔딩 (가해 학생이 밝혀진 엔딩 1) */
+/** 법적 책임 카드가 필요한 엔딩 (가해 학생이 밝혀진 엔딩 1, 사진을 전달한 엔딩 4) */
 export function legalFor(ending: EndingId): { heading: string; cards: PenaltyCard[]; note: string } | null {
-  return ending === 'resolved' ? { heading: '학교 조치와 별개로, 법적으로는 이런 책임을 질 수 있다', cards: LEGAL, note: LEGAL_NOTE } : null;
+  if (ending === 'resolved') return { heading: '학교 조치와 별개로, 법적으로는 이런 책임을 질 수 있다', cards: LEGAL, note: LEGAL_NOTE };
+  if (ending === 'participant') return { heading: '사진을 전달한 경우에도, 법적으로는 이런 책임을 질 수 있다', cards: LEGAL_FORWARD, note: LEGAL_NOTE };
+  return null;
 }

@@ -8,7 +8,7 @@
 import type { CharId } from './characters';
 import type { EndingId } from './endings';
 import { RECOVERY } from './endings';
-import { LEGAL, LEGAL_NOTE } from './penalties';
+import { LEGAL, LEGAL_FORWARD, LEGAL_NOTE } from './penalties';
 
 export interface FilmLine {
   who: CharId | null;
@@ -300,6 +300,15 @@ function participant(): Shot[] {
         L('daeun', '그냥… 다들 보내니까 나도 보낸 건데.', 'awkward'),
         L('taeo', '이거… 우리도 조사받는 거 아냐?', 'worried'),
       ],
+    },
+    {
+      kind: 'ledger',
+      title: '사진을 전달한 사람도 질 수 있는 책임',
+      items: [
+        { no: '학교', name: '학교폭력 조치', text: '서면 사과, 접촉 금지, 특별교육, 봉사 등 학교의 조치를 사안의 정도에 따라 받을 수 있다.', level: 2 },
+        ...LEGAL_FORWARD.map((c) => ({ no: c.no, name: c.name, text: c.desc, level: c.level })),
+      ],
+      note: LEGAL_NOTE,
     },
     { kind: 'card', text: '1년 뒤', hold: 1800 },
     {
