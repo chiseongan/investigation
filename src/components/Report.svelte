@@ -24,7 +24,7 @@
     picked = id;
   }
   function submit() {
-    if (!picked || !chosen.length) return;
+    if (!picked) return;
     if (!confirming) {
       confirming = true;
       return;
@@ -72,11 +72,15 @@
     {#if confirming}
       <p class="warn">이 보고서를 제출할까요? 제출한 뒤에도 결과를 보고 이전 요일로 되감을 수 있어요.</p>
     {/if}
-    <button class="btn primary" disabled={!picked || !chosen.length} onclick={submit}>
+    <button class="btn primary" disabled={!picked} onclick={submit}>
       {confirming ? '제출하기' : '보고서 제출'}
     </button>
     {#if confirming}<button class="btn ghost" onclick={() => (confirming = false)}>다시 고르기</button>{/if}
-    {#if !picked || !chosen.length}<p class="hint">단서를 하나 이상 고르고 학생을 지목해야 제출할 수 있어요.</p>{/if}
+    {#if !picked}
+      <p class="hint">이 일을 처음 시작한 학생을 지목해야 제출할 수 있어요.</p>
+    {:else if !chosen.length}
+      <p class="hint">증거로 낼 단서가 없으면 보고서가 약해 보일 수 있어요. 그래도 제출할 수 있어요.</p>
+    {/if}
   </div>
 </main>
 

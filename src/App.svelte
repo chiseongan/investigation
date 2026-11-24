@@ -213,6 +213,12 @@
       autoEnter();
     }, cap);
   }
+  /** 하루가 끝난 화면에서 "다음 날로"를 연달아 눌러도 하루만 넘어가게 한다 (전환 중 다시 누르면 요일이 건너뛰어지던 문제) */
+  function nextDayOnce() {
+    withCurtain(() => {
+      if (get(game).phase === 'dayEnd') beginDay(false);
+    }, dayCaption($game.dayIndex + 1));
+  }
   /** 같은 장소 안에서 다음 사람과 대화하러 넘어갈 때의 짧은 화면 전환 */
   function sameplace(action: () => void) {
     withCurtain(action);
@@ -293,9 +299,9 @@
       {/key}
     {:else if $game.phase === 'dayEnd'}
       {#if $game.mode === 'novel'}
-        <DayEndNovel {day} gs={$game} {hasNext} onNext={() => withCurtain(() => beginDay(false), dayCaption($game.dayIndex + 1))} onReport={openReport} onNotebook={() => (notebookOpen = true)} />
+        <DayEndNovel {day} gs={$game} {hasNext} onNext={nextDayOnce} onReport={openReport} onNotebook={() => (notebookOpen = true)} />
       {:else}
-        <DayEnd {day} gs={$game} {hasNext} onNext={() => withCurtain(() => beginDay(false), dayCaption($game.dayIndex + 1))} onReport={openReport} onNotebook={() => (notebookOpen = true)} />
+        <DayEnd {day} gs={$game} {hasNext} onNext={nextDayOnce} onReport={openReport} onNotebook={() => (notebookOpen = true)} />
       {/if}
     {/if}
   {/if}
