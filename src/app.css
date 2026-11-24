@@ -57,6 +57,11 @@ body {
     box-shadow: 0 8px 40px rgba(31, 42, 68, 0.28);
   }
 }
+@media (min-width: 900px) and (min-aspect-ratio: 11/10) {
+  #app > .app {
+    box-shadow: none;
+  }
+}
 button {
   font-family: inherit;
   touch-action: manipulation;

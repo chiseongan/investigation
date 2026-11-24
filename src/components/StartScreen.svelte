@@ -335,6 +335,32 @@
     background: linear-gradient(180deg, rgba(31, 42, 68, 0.88), #1f2a44 40%);
     box-shadow: 0 -10px 24px rgba(31, 42, 68, 0.6);
   }
+  /* 태블릿·노트북 가로 화면 */
+  @media (min-width: 900px) and (min-aspect-ratio: 11/10) {
+    .head {
+      padding-inline: 7vw;
+    }
+    .head h1 {
+      font-size: 68px;
+    }
+    .file.rec {
+      right: 9vw;
+      width: min(calc(50% - 8px), 420px);
+    }
+    .file.rec .rows {
+      font-size: 15px;
+    }
+    .file.rec .memo {
+      font-size: 15px;
+    }
+    .screen.title .actions,
+    .screen.brief .actions {
+      padding-inline: max(22px, calc(50% - 260px));
+    }
+    .screen.brief .center {
+      padding-inline: max(22px, calc(50% - 360px));
+    }
+  }
   @media (prefers-reduced-motion: reduce) {
     .fig,
     .file,

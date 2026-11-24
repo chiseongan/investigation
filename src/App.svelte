@@ -337,6 +337,12 @@
     background: #eef1f5;
     overflow: hidden;
   }
+  /* 태블릿·노트북 가로 화면: 화면 가득 */
+  @media (min-width: 900px) and (min-aspect-ratio: 11/10) {
+    .app {
+      width: 100%;
+    }
+  }
   .curtain {
     position: absolute;
     inset: 0;

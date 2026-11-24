@@ -614,4 +614,21 @@
       animation: none;
     }
   }
+  /* 태블릿·노트북 가로 화면: 화면 가득, 인물과 대화창만 가운데 영역에 모은다 */
+  @media (min-width: 900px) and (min-aspect-ratio: 11/10) {
+    .cast {
+      padding-inline: max(12px, calc((100% - 1100px) / 2));
+    }
+    .box {
+      padding-inline: max(16px, calc((100% - 880px) / 2));
+    }
+    .text {
+      font-size: 20px;
+    }
+    .place {
+      left: max(12px, calc((100% - 1100px) / 2));
+      font-size: 15px;
+    }
+  }
 </style>
+
