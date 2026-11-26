@@ -206,6 +206,7 @@
   }
   .big {
     margin: 0;
+    word-break: keep-all;
     font-size: clamp(24px, 7vw, 32px);
     line-height: 1.55;
     font-weight: 800;
@@ -213,6 +214,7 @@
   }
   .sub {
     margin: 0;
+    word-break: keep-all;
     font-size: 13px;
     line-height: 1.5;
     color: #9aa8c6;

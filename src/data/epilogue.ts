@@ -65,7 +65,64 @@ export type Shot =
 
 const L = (who: CharId | null, text: string, face?: string): FilmLine => ({ who, text, ...(face ? { face } : {}) });
 
-/** 엔딩 1: 지우의 회복 → '그렇다면 민준이는?' → 민준의 이후 */
+/** 엔딩 1: 함께 웃고, 퍼뜨리고, 지켜본 친구들(태오·다은과 주변 아이들)의 책임과 반성 */
+const BYSTANDERS: Shot[] = [
+  { kind: 'card', text: '함께 웃던 친구들은\n어떻게 됐을까?', hold: 4200 },
+  {
+    kind: 'scene', bg: 'classroom', t: 0.7, me: null, place: '교실 · 사안 조사 이후',
+    right: [{ who: 'daeun', face: 'awkward' }, { who: 'taeo', face: 'worried' }],
+    lines: [
+      L(null, '조사는 민준에게서 끝나지 않을 수 있다. 사진을 전달하고, 함께 놀리고, 웃어 준 아이들도 확인 대상이 된다.'),
+      L('daeun', '나는 먼저 올린 것도 아닌데… 그냥 다른 방에 보낸 것뿐이야.', 'awkward'),
+      L('taeo', '난 웃기만 했어. 다들 웃길래….', 'worried'),
+      L(null, '하지만 퍼뜨린 손과 따라 웃은 소리는, 지우에게 "아무도 내 편이 아니다"라는 말이 되었을 수 있다.'),
+    ],
+  },
+  {
+    kind: 'ledger',
+    title: '함께한 친구들이 질 수 있는 책임',
+    items: [
+      { no: '전달', name: '사진을 퍼뜨린 경우', text: '학교폭력 조치를 받을 수 있고, 나이와 사안에 따라 보호처분·형사처벌·손해배상 책임까지 이어질 수 있다.', level: 3 },
+      { no: '동조', name: '함께 놀리고 부추긴 경우', text: '가담한 것으로 보아 서면 사과, 접촉 금지, 특별교육 같은 조치를 사안의 정도에 따라 받을 수 있다.', level: 2 },
+      { no: '방관', name: '보고도 지켜만 본 경우', text: '지켜본 것만으로 처벌받는 것은 보통 아니다. 하지만 침묵은 괴롭힘이 이어지게 하는 힘이 될 수 있어, 돌아보고 배우는 시간이 필요하다.', level: 1 },
+    ],
+    note: LEGAL_NOTE,
+  },
+  {
+    kind: 'scene', bg: 'counseling', t: 0.75, me: null, place: '상담실 · 특별교육 시간',
+    right: [{ who: 'teacher', face: 'serious' }, { who: 'daeun', face: 'apathetic' }, { who: 'taeo', face: 'wary' }],
+    lines: [
+      L('teacher', '그때 지우 자리에 있었다면, 그 웃음소리가 어떻게 들렸을까요?', 'serious'),
+      L('daeun', '……나만 보낸 게 아니라고 생각했어요. 그런데 내가 보낸 한 번 때문에 더 많은 사람이 봤어요.', 'apathetic'),
+      L('taeo', '장난인 줄 알았는데… 지우는 한 번도 같이 웃은 적이 없었어요.', 'worried'),
+      L('teacher', '잘못을 알았다면, 다음에 할 수 있는 행동을 생각해 봐요.', 'encourage'),
+    ],
+  },
+  {
+    kind: 'scene', bg: 'hallway', t: 0.5, me: null, place: '복도 · 몇 주 뒤',
+    right: [{ who: 'jiwoo', face: 'guarded' }, { who: 'daeun', face: 'apathetic' }, { who: 'taeo', face: 'worried' }],
+    lines: [
+      L('daeun', '지우야, 미안해. 사진 보낸 거… 지워 달라고 다 연락했어.', 'apathetic'),
+      L('taeo', '웃어서 미안해. 이제 그런 말 나오면 하지 말라고 할게.', 'worried'),
+      L('jiwoo', '……바로 괜찮다고는 못 하겠어.', 'guarded'),
+      L(null, '사과했다고 바로 용서받는 것은 아니다. 받아 줄지는 지우가 정한다. 달라진 행동을 이어 가는 것이 반성이다.'),
+    ],
+  },
+];
+
+/** 엔딩 4: 사진을 전달한 아이들의 반성 */
+const FORWARDERS_REFLECT: Shot = {
+  kind: 'scene', bg: 'counseling', t: 0.7, me: null, place: '상담실 · 특별교육 시간',
+  right: [{ who: 'teacher', face: 'serious' }, { who: 'daeun', face: 'apathetic' }, { who: 'taeo', face: 'wary' }],
+  lines: [
+    L('teacher', '처음 올린 사람이 아니어도, 보내고 따라 웃은 일은 각자의 선택이에요.', 'serious'),
+    L('daeun', '……다들 하니까 괜찮은 줄 알았어요. 받는 사람이 늘어나는 건 생각 못 했어요.', 'apathetic'),
+    L('taeo', '웃긴다고 댓글 단 것도… 부추긴 거였네요.', 'worried'),
+    L(null, '반성은 "몰랐다"에서 멈추지 않고, 지우고, 사과하고, 다음에는 멈춰 세우는 행동으로 이어져야 한다.'),
+  ],
+};
+
+/** 엔딩 1: 지우의 회복 → '그렇다면 민준이는?' → 민준의 이후 → 함께 웃던 친구들 */
 const RESOLVED: Shot[] = [
   {
     kind: 'scene', bg: 'counseling', t: 0.55, me: 'warm', place: '상담실 · 며칠 뒤',
@@ -149,9 +206,10 @@ const RESOLVED: Shot[] = [
       L('minjun', '그때 웃고 넘긴 일이… 한 사람의 삶을 바꿨고, 내 삶도 바꿨어.', 'dejected'),
     ],
   },
+  ...BYSTANDERS,
   {
     kind: 'card',
-    text: '장난이라고 생각한 행동도\n누군가에게는 오래 남는 상처가 되고,\n하는 사람의 삶에도 기록으로 남을 수 있습니다.',
+    text: '장난이라고 생각한 행동도\n누군가에게는 오래 남는 상처가 됩니다.\n따라 웃거나 퍼뜨리지 않고\n어른에게 알리는 사람이 괴롭힘을 멈춥니다.',
     sub: '이야기 속 학교와 인물은 모두 가상입니다. 실제 조치와 기록 기준은 바뀔 수 있습니다.',
     hold: 6000,
   },
@@ -310,6 +368,7 @@ function participant(): Shot[] {
       ],
       note: LEGAL_NOTE,
     },
+    FORWARDERS_REFLECT,
     { kind: 'card', text: '1년 뒤', hold: 1800 },
     {
       kind: 'scene', bg: 'hallway', t: 0.9, me: null, place: '복도 · 1년 뒤', faded: true,

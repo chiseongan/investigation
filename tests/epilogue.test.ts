@@ -46,12 +46,23 @@ describe('엔딩 영상 대본', () => {
     const q = shots.findIndex((s) => s.kind === 'card' && s.text.replace(/\s+/g, ' ').includes('그렇다면 민준이는 어떻게 됐을까?'));
     expect(q).toBeGreaterThan(0);
     const before = shots.slice(0, q);
-    const after = shots.slice(q + 1);
+    const b = shots.findIndex((s) => s.kind === 'card' && s.text.includes('함께 웃던 친구들'));
+    expect(b).toBeGreaterThan(q);
+    const after = shots.slice(q + 1, b);
     expect(before.some((s) => s.kind === 'scene' && s.right.some((f) => f.who === 'jiwoo'))).toBe(true);
     expect(after.some((s) => s.kind === 'scene' && !!s.tag)).toBe(true);
     expect(after.every((s) => s.kind !== 'scene' || s.right.every((f) => f.who === 'minjun'))).toBe(true);
     // 가해 학생이 받을 수 있는 법적 책임(학교 조치, 소년법, 형사, 민사)이 영상에 나온다
     const ledger = after.find((s) => s.kind === 'ledger');
     expect(ledger && ledger.kind === 'ledger' && ledger.items.map((i) => i.no)).toEqual(expect.arrayContaining(['학교', '소년법', '형사', '민사']));
+  });
+  it('엔딩 1·4는 동조·전달한 친구들(태오·다은)의 반성까지 보여 준다', () => {
+    for (const e of ['resolved', 'participant'] as const) {
+      const shots = filmFor(e, 'minjun', '민준');
+      const said = shots.flatMap((s) => (s.kind === 'scene' && s.place?.includes('특별교육') ? s.lines.map((l) => l.who) : []));
+      expect(said).toEqual(expect.arrayContaining(['daeun', 'taeo']));
+    }
+    const ledgers = filmFor('resolved', 'minjun', '민준').flatMap((s) => (s.kind === 'ledger' ? s.items.map((i) => i.no) : []));
+    expect(ledgers).toEqual(expect.arrayContaining(['전달', '동조', '방관']));
   });
 });
